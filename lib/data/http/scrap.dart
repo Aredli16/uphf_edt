@@ -4,7 +4,7 @@ class Scrap {
   static String getDay(String html) {
     final webScraper = WebScraper();
     if (webScraper.loadFromString(html)) {
-      return webScraper.getElementTitle('div > div > h1')[0];
+      return webScraper.getElementTitle('div > div > h1').first;
     } else {
       throw Exception('Failed to load day');
     }
@@ -29,7 +29,7 @@ class Scrap {
         cours.add({
           'cours': coursElements[i]['title'].split("(")[0],
           'hour': hoursElements[i].trim(),
-          'room': roomElements[i].trim(),
+          'room': roomElements[i].trim().split("(")[0],
           'type': coursElements[i]['title'].substring(
               coursElements[i]['title'].length - 2,
               coursElements[i]['title'].length)
