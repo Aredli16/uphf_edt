@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:uphf_edt/data/http/http_request.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
+import 'package:uphf_edt/screen/lesson.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -10,15 +11,19 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String day = "Emploi du temps";
-  Future<String> cas =
-      HttpRequestHelper.instance.getCas('clempe4_', '2486cQlp1793');
+  late Future<String> cas;
+
+  @override
+  void initState() {
+    super.initState();
+    cas = HttpRequestHelper.instance.getCas('clempe4_', '2486cQlp1793');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(day),
+        title: const Text("Emploi du temps"),
       ),
       body: FutureBuilder<String>(
         future: cas,
@@ -42,27 +47,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ListView.builder(
                     itemCount: cours.length,
                     itemBuilder: (context, index) {
-                      return Card(
-                        margin: const EdgeInsets.all(10.0),
-                        child: ListTile(
-                          title: Text(cours[index]['cours']!),
-                          leading: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                                Icons.schedule,
-                                color: Colors.blue,
-                              ),
-                            ],
-                          ),
-                          trailing: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(cours[index]['hour']!),
-                            ],
-                          ),
-                          subtitle: Text(cours[index]['room']!),
-                        ),
+                      return Lesson(
+                        cours[index]['room']!,
+                        cours[index]['hour']!,
+                        cours[index]['cours']!,
+                        cours[index]['type']!,
                       );
                     },
                   ),
@@ -89,19 +78,11 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: (value) {
           if (value == 1) {
             setState(() {
-              cas = HttpRequestHelper.instance.getNextPage(
-                HttpRequestHelper.userAgent,
-                HttpRequestHelper.jSessionId,
-                HttpRequestHelper.agimus,
-              );
+              cas = HttpRequestHelper.instance.getNextPage();
             });
           } else {
             setState(() {
-              cas = HttpRequestHelper.instance.getPreviousPage(
-                HttpRequestHelper.userAgent,
-                HttpRequestHelper.jSessionId,
-                HttpRequestHelper.agimus,
-              );
+              cas = HttpRequestHelper.instance.getPreviousPage();
             });
           }
         },
