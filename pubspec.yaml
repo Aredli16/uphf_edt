@@ -51,6 +51,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.9.2
   flutter_native_splash: ^1.2.4
   change_app_package_name: ^1.0.0
+  flutter_app_name: ^0.1.1
 
 flutter_icons:
   android: true
@@ -61,6 +62,9 @@ flutter_icons:
 flutter_native_splash:
   color: "#ffffff" 
   image: "assets/2560px-UPHF_logo.svg.png"
+
+flutter_app_name:
+  name: "UPHF-EDT"
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

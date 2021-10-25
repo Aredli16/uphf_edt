@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="fr.aredli.uphf.edt">
    <application
-        android:label="uphf_edt"
+        android:label="UPHF-EDT"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
