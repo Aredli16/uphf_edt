@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.uphf_edt">
+    package="fr.aredli.uphf.edt">
    <application
         android:label="uphf_edt"
         android:icon="@mipmap/ic_launcher">
