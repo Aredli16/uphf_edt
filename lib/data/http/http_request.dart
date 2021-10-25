@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:html/dom.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as scraper;
 
@@ -8,9 +9,19 @@ class HttpRequestHelper {
   static final HttpRequestHelper instance =
       HttpRequestHelper._privateConstructor();
 
-  static String jSessionId = '';
-  static String userAgent = '';
-  static String agimus = '';
+  String _jSessionId = '';
+  String _userAgent = '';
+  String _agimus = '';
+  String _username = '';
+  String _password = '';
+  String _token = '';
+  String _execution = '';
+  String _eventId = '';
+  String _ipAddress = '';
+  String _submit = '';
+  String _facesForm = '';
+  String _noJavaScript = '';
+  String _viewState = '';
 
   Future<String> getCas(String username, String password) async {
     var headers = {
@@ -36,7 +47,7 @@ class HttpRequestHelper {
     var res = await http.get(Uri.parse('https://cas.uphf.fr/cas/login?$query'),
         headers: headers);
 
-    jSessionId = res.headers['set-cookie']!.substring(11, 43);
+    _jSessionId = res.headers['set-cookie']!.substring(11, 43);
 
     Map<String, String> hiddenInput = {};
     scraper
@@ -48,34 +59,25 @@ class HttpRequestHelper {
           element.attributes['value'].toString();
     });
 
-    userAgent = hiddenInput['userAgent']!;
-    return await postLogin(
-      username,
-      password,
-      hiddenInput['lt']!,
-      hiddenInput['execution']!,
-      hiddenInput['_eventId']!,
-      hiddenInput['ipAddress']!,
-      hiddenInput['submit']!,
-    );
+    _username = username;
+    _password = password;
+    _userAgent = hiddenInput['userAgent']!;
+    _token = hiddenInput['lt']!;
+    _execution = hiddenInput['execution']!;
+    _eventId = hiddenInput['_eventId']!;
+    _ipAddress = hiddenInput['ipAddress']!;
+    _submit = hiddenInput['submit']!;
+    return await postLogin();
   }
 
-  Future<String> postLogin(
-    String username,
-    String password,
-    String token,
-    String execution,
-    String eventId,
-    String ipAddress,
-    String submit,
-  ) async {
+  Future<String> postLogin() async {
     var headers = {
       'Connection': 'keep-alive',
       'Cache-Control': 'max-age=0',
       'Upgrade-Insecure-Requests': '1',
       'Origin': 'https://cas.uphf.fr',
       'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': userAgent,
+      'User-Agent': _userAgent,
       'Accept':
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       'Sec-GPC': '1',
@@ -86,7 +88,7 @@ class HttpRequestHelper {
       'Referer':
           'https://cas.uphf.fr/cas/login?service=https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml',
       'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Cookie': 'JSESSIONID=$jSessionId',
+      'Cookie': 'JSESSIONID=$_jSessionId',
       'Accept-Encoding': 'gzip',
     };
 
@@ -97,15 +99,15 @@ class HttpRequestHelper {
     var query = params.entries.map((p) => '${p.key}=${p.value}').join('&');
 
     var data =
-        'username=$username&password=$password&lt=$token&execution=$execution&_eventId=$eventId&ipAddress=$ipAddress&userAgent=$userAgent&submit=$submit&ipAddress=$ipAddress&userAgent=$userAgent';
+        'username=$_username&password=$_password&lt=$_token&execution=$_execution&_eventId=$_eventId&ipAddress=$_ipAddress&userAgent=$_userAgent&submit=$_submit&ipAddress=$_ipAddress&userAgent=$_userAgent';
 
     var res = await http.post(
         Uri.parse(
-            'https://cas.uphf.fr/cas/login;jsessionid=$jSessionId?$query'),
+            'https://cas.uphf.fr/cas/login;jsessionid=$_jSessionId?$query'),
         headers: headers,
         body: data);
 
-    agimus = res.headers['set-cookie']!.substring(7, 81);
+    _agimus = res.headers['set-cookie']!.substring(7, 81);
     String location = res.headers['location']!;
 
     return await getVtTicket(location);
@@ -116,7 +118,7 @@ class HttpRequestHelper {
       'Connection': 'keep-alive',
       'Cache-Control': 'max-age=0',
       'Upgrade-Insecure-Requests': '1',
-      'User-Agent': userAgent,
+      'User-Agent': _userAgent,
       'Accept':
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       'Sec-GPC': '1',
@@ -126,13 +128,13 @@ class HttpRequestHelper {
       'Sec-Fetch-Dest': 'document',
       'Referer': 'https://cas.uphf.fr/',
       'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Cookie': 'AGIMUS=$agimus',
+      'Cookie': 'AGIMUS=$_agimus',
       'Accept-Encoding': 'gzip',
     };
 
     var res = await http.get(Uri.parse(location), headers: headers);
 
-    jSessionId = scraper
+    _jSessionId = scraper
         .parse(res.body)
         .getElementsByTagName('link')[2]
         .attributes['href']!
@@ -146,7 +148,7 @@ class HttpRequestHelper {
       'Connection': 'keep-alive',
       'Cache-Control': 'max-age=0',
       'Upgrade-Insecure-Requests': '1',
-      'User-Agent': userAgent,
+      'User-Agent': _userAgent,
       'Accept':
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       'Sec-GPC': '1',
@@ -156,27 +158,28 @@ class HttpRequestHelper {
       'Sec-Fetch-Dest': 'document',
       'Referer': 'https://cas.uphf.fr/',
       'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Cookie': 'JSESSIONID=$jSessionId; AGIMUS=$agimus',
+      'Cookie': 'JSESSIONID=$_jSessionId; AGIMUS=$_agimus',
       'Accept-Encoding': 'gzip',
     };
 
     var res = await http.get(
         Uri.parse(
-            'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml;jsessionid=$jSessionId'),
+            'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml;jsessionid=$_jSessionId'),
         headers: headers);
 
+    _getNewHiddenInputState(res.body);
+
     return res.body;
   }
 
-  Future<String> getNextPage(
-      String userAgent, String jSessionId, String agimus) async {
+  Future<String> getNextPage() async {
     var headers = {
       'Connection': 'keep-alive',
       'Cache-Control': 'max-age=0',
       'Upgrade-Insecure-Requests': '1',
       'Origin': 'https://vtmob.uphf.fr',
       'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': userAgent,
+      'User-Agent': _userAgent,
       'Accept':
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       'Sec-GPC': '1',
@@ -187,12 +190,12 @@ class HttpRequestHelper {
       'Referer':
           'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml',
       'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Cookie': 'JSESSIONID=$jSessionId; AGIMUS=$agimus',
+      'Cookie': 'JSESSIONID=$_jSessionId; AGIMUS=$_agimus',
       'Accept-Encoding': 'gzip',
     };
 
     var data =
-        'org.apache.myfaces.trinidad.faces.FORM=redirectForm&_noJavaScript=false&javax.faces.ViewState=%211&source=redirectForm%3AsemSuiv';
+        'org.apache.myfaces.trinidad.faces.FORM=$_facesForm&_noJavaScript=$_noJavaScript&javax.faces.ViewState=$_viewState&source=redirectForm%3AsemSuiv';
 
     var res = await http.post(
         Uri.parse(
@@ -200,18 +203,19 @@ class HttpRequestHelper {
         headers: headers,
         body: data);
 
+    _getNewHiddenInputState(res.body);
+
     return res.body;
   }
 
-  Future<String> getPreviousPage(
-      String userAgent, String jSessionId, String agimus) async {
+  Future<String> getPreviousPage() async {
     var headers = {
       'Connection': 'keep-alive',
       'Cache-Control': 'max-age=0',
       'Upgrade-Insecure-Requests': '1',
       'Origin': 'https://vtmob.uphf.fr',
       'Content-Type': 'application/x-www-form-urlencoded',
-      'User-Agent': userAgent,
+      'User-Agent': _userAgent,
       'Accept':
           'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
       'Sec-GPC': '1',
@@ -222,12 +226,12 @@ class HttpRequestHelper {
       'Referer':
           'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml',
       'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Cookie': 'JSESSIONID=$jSessionId; AGIMUS=$agimus',
+      'Cookie': 'JSESSIONID=$_jSessionId; AGIMUS=$_agimus',
       'Accept-Encoding': 'gzip',
     };
 
     var data =
-        'org.apache.myfaces.trinidad.faces.FORM=redirectForm&_noJavaScript=false&javax.faces.ViewState=%211&source=redirectForm%3AsemPrec';
+        'org.apache.myfaces.trinidad.faces.FORM=$_facesForm&_noJavaScript=$_noJavaScript&javax.faces.ViewState=$_viewState&source=redirectForm%3AsemPrec';
 
     var res = await http.post(
         Uri.parse(
@@ -235,6 +239,18 @@ class HttpRequestHelper {
         headers: headers,
         body: data);
 
+    _getNewHiddenInputState(res.body);
+
     return res.body;
+  }
+
+  void _getNewHiddenInputState(String html) {
+    List<Element> hiddenInput = scraper
+        .parse(html)
+        .getElementById('redirectForm')!
+        .querySelectorAll('input');
+    _facesForm = hiddenInput[5].attributes['value']!;
+    _noJavaScript = hiddenInput[6].attributes['value']!;
+    _viewState = hiddenInput[7].attributes['value']!;
   }
 }
