@@ -8,6 +8,10 @@ class HttpRequestHelper {
   static final HttpRequestHelper instance =
       HttpRequestHelper._privateConstructor();
 
+  static String jSessionId = '';
+  static String userAgent = '';
+  static String agimus = '';
+
   Future<String> getCas(String username, String password) async {
     var headers = {
       'Connection': 'keep-alive',
@@ -32,7 +36,7 @@ class HttpRequestHelper {
     var res = await http.get(Uri.parse('https://cas.uphf.fr/cas/login?$query'),
         headers: headers);
 
-    String jSessionId = res.headers['set-cookie']!.substring(11, 43);
+    jSessionId = res.headers['set-cookie']!.substring(11, 43);
 
     Map<String, String> hiddenInput = {};
     scraper
@@ -44,9 +48,8 @@ class HttpRequestHelper {
           element.attributes['value'].toString();
     });
 
+    userAgent = hiddenInput['userAgent']!;
     return await postLogin(
-      hiddenInput['userAgent']!,
-      jSessionId,
       username,
       password,
       hiddenInput['lt']!,
@@ -58,8 +61,6 @@ class HttpRequestHelper {
   }
 
   Future<String> postLogin(
-    String userAgent,
-    String jSessionId,
     String username,
     String password,
     String token,
@@ -104,14 +105,13 @@ class HttpRequestHelper {
         headers: headers,
         body: data);
 
-    String agimus = res.headers['set-cookie']!.substring(7, 81);
+    agimus = res.headers['set-cookie']!.substring(7, 81);
     String location = res.headers['location']!;
 
-    return await getVtTicket(userAgent, agimus, location);
+    return await getVtTicket(location);
   }
 
-  Future<String> getVtTicket(
-      String userAgent, String agimus, String location) async {
+  Future<String> getVtTicket(String location) async {
     var headers = {
       'Connection': 'keep-alive',
       'Cache-Control': 'max-age=0',
@@ -132,17 +132,16 @@ class HttpRequestHelper {
 
     var res = await http.get(Uri.parse(location), headers: headers);
 
-    String jSessionId = scraper
+    jSessionId = scraper
         .parse(res.body)
         .getElementsByTagName('link')[2]
         .attributes['href']!
         .substring(74, 106);
 
-    return await getVt(userAgent, jSessionId, agimus);
+    return await getVt();
   }
 
-  Future<String> getVt(
-      String userAgent, String jSessionId, String agimus) async {
+  Future<String> getVt() async {
     var headers = {
       'Connection': 'keep-alive',
       'Cache-Control': 'max-age=0',

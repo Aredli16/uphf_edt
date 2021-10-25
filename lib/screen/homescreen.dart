@@ -11,6 +11,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String day = "Emploi du temps";
+  Future<String> cas =
+      HttpRequestHelper.instance.getCas('clempe4_', '2486cQlp1793');
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(day),
       ),
       body: FutureBuilder<String>(
-        future: HttpRequestHelper.instance.getCas('clempe4_', '2486cQlp1793'),
+        future: cas,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             String day = Scrap.getDay(snapshot.data!);
@@ -71,6 +73,36 @@ class _HomeScreenState extends State<HomeScreen> {
             return Center(child: Text(snapshot.error.toString()));
           } else {
             return const LinearProgressIndicator();
+          }
+        },
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        iconSize: 30.0,
+        unselectedFontSize: 14.0,
+        unselectedItemColor: Colors.blue,
+        items: const [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.navigate_before), label: 'Précedent'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.navigate_next), label: 'Suivant'),
+        ],
+        onTap: (value) {
+          if (value == 1) {
+            setState(() {
+              cas = HttpRequestHelper.instance.getNextPage(
+                HttpRequestHelper.userAgent,
+                HttpRequestHelper.jSessionId,
+                HttpRequestHelper.agimus,
+              );
+            });
+          } else {
+            setState(() {
+              cas = HttpRequestHelper.instance.getPreviousPage(
+                HttpRequestHelper.userAgent,
+                HttpRequestHelper.jSessionId,
+                HttpRequestHelper.agimus,
+              );
+            });
           }
         },
       ),
