@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/data/http/http_request.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
 import 'package:uphf_edt/screen/lesson.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key? key, required this.username, required this.password})
+      : super(key: key);
+
+  final String username;
+  final String password;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -16,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    cas = HttpRequestHelper.instance.getCas('clempe4_', '2486cQlp1793');
+    cas = HttpRequestHelper.instance.getCas(widget.username, widget.password);
   }
 
   @override

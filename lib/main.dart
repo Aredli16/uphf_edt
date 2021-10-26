@@ -2,18 +2,34 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/screen/homescreen.dart';
+import 'package:uphf_edt/screen/loginscreen.dart';
 
-void main() {
+void main() async {
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  String? username = prefs.getString('username');
+  String? password = prefs.getString('password');
+  runApp(MyApp(
+    username: username,
+    password: password,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({
+    Key? key,
+    this.username,
+    this.password,
+  }) : super(key: key);
+
+  final String? username;
+  final String? password;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +39,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.ubuntuTextTheme(),
       ),
-      home: const HomeScreen(),
+      home: username == null
+          ? const LoginScreen()
+          : HomeScreen(
+              username: username!,
+              password: password!,
+            ),
     );
   }
 }
