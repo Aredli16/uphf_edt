@@ -37,6 +37,8 @@ dependencies:
   http: ^0.13.4
   web_scraper: ^0.1.4
   google_fonts: ^2.1.0
+  flutter_login: ^2.2.1
+  shared_preferences: ^2.0.8
 
 dev_dependencies:
   flutter_test:
@@ -80,6 +82,8 @@ flutter:
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/2560px-UPHF_logo.svg.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
