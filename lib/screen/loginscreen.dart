@@ -46,6 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return FlutterLogin(
       title: 'UPHF',
       logo: 'assets/2560px-UPHF_logo.svg.png',
+      logoTag: 'uphf_logo_tag',
       onLogin: _authUser,
       onSignup: (p0) => Future(() => null),
       onSubmitAnimationCompleted: () {

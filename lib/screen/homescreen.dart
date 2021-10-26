@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/data/http/http_request.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
 import 'package:uphf_edt/screen/lesson.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:uphf_edt/screen/loginscreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key, required this.username, required this.password})
@@ -21,6 +24,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     cas = HttpRequestHelper.instance.getCas(widget.username, widget.password);
+  }
+
+  void disconnectUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('username');
+    prefs.remove('password');
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const LoginScreen()));
   }
 
   @override
@@ -91,6 +102,24 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
       ),
+      floatingActionButton: SpeedDial(
+        backgroundColor: Colors.transparent,
+        elevation: 0.0,
+        buttonSize: 70.0,
+        childrenButtonSize: 70.0,
+        spaceBetweenChildren: 25.0,
+        child: Image.asset(
+            'assets/ic_launcher/res/mipmap-xxxhdpi/ic_launcher.png'),
+        heroTag: 'uphf_logo_tag',
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.logout),
+            label: "Deconnexion",
+            onTap: disconnectUser,
+          )
+        ],
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 }
