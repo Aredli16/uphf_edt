@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/data/http/http_request.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
 import 'package:uphf_edt/screen/lesson.dart';
