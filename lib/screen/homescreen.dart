@@ -50,9 +50,44 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentDay.toUpperCase()),
-        centerTitle: true,
-      ),
+          title: Text(currentDay.toUpperCase()),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              onPressed: () async {
+                DateTime? selectedDate = await showDatePicker(
+                  context: context,
+                  locale: const Locale("fr", "FR"),
+                  initialDate: DateTime.now(),
+                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                  lastDate: DateTime.now().add(
+                    const Duration(days: 365),
+                  ),
+                );
+                if (selectedDate != null) {
+                  DateFormat format = DateFormat('d/M/y');
+                  String dateWithFormat = format.format(selectedDate);
+                  setState(() {
+                    cas = HttpRequestHelper.instance
+                        .getASpecificDay(dateWithFormat);
+                    _getDay();
+                  });
+                }
+              },
+              icon: const Icon(Icons.calendar_today),
+            ),
+          ],
+          leading: IconButton(
+              onPressed: () {
+                DateFormat format = DateFormat("d/M/y");
+                String todayWithFormat = format.format(DateTime.now());
+                setState(() {
+                  cas = HttpRequestHelper.instance
+                      .getASpecificDay(todayWithFormat);
+                  _getDay();
+                });
+              },
+              icon: const Icon(Icons.today))),
       body: FutureBuilder<String>(
         future: cas,
         builder: (context, snapshot) {
