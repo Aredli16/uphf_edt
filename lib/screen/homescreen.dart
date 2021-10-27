@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/data/http/http_request.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
@@ -19,11 +20,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<String> cas;
+  String currentDay = 'Emploi du temps';
 
   @override
   void initState() {
     super.initState();
     cas = HttpRequestHelper.instance.getCas(widget.username, widget.password);
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      _getDay();
+    });
+  }
+
+  void _getDay() async {
+    String day = Scrap.getDay(await cas);
+    setState(() {
+      currentDay = day;
+    });
   }
 
   void disconnectUser() async {
@@ -38,40 +50,24 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Emploi du temps"),
+        title: Text(currentDay.toUpperCase()),
+        centerTitle: true,
       ),
       body: FutureBuilder<String>(
         future: cas,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            String day = Scrap.getDay(snapshot.data!);
             List<Map<String, String>> cours = Scrap.getCours(snapshot.data!);
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    day,
-                    style: const TextStyle(
-                      fontSize: 25.0,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: cours.length,
-                    itemBuilder: (context, index) {
-                      return Lesson(
-                        cours[index]['room']!,
-                        cours[index]['hour']!,
-                        cours[index]['cours']!,
-                        cours[index]['type']!,
-                      );
-                    },
-                  ),
-                )
-              ],
+            return ListView.builder(
+              itemCount: cours.length,
+              itemBuilder: (context, index) {
+                return Lesson(
+                  cours[index]['room']!,
+                  cours[index]['hour']!,
+                  cours[index]['cours']!,
+                  cours[index]['type']!,
+                );
+              },
             );
           } else if (snapshot.hasError) {
             return Center(child: Text(snapshot.error.toString()));
@@ -94,10 +90,12 @@ class _HomeScreenState extends State<HomeScreen> {
           if (value == 1) {
             setState(() {
               cas = HttpRequestHelper.instance.getNextPage();
+              _getDay();
             });
           } else {
             setState(() {
               cas = HttpRequestHelper.instance.getPreviousPage();
+              _getDay();
             });
           }
         },

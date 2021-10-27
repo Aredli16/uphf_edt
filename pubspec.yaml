@@ -40,6 +40,7 @@ dependencies:
   flutter_login: ^2.2.1
   shared_preferences: ^2.0.8
   flutter_speed_dial: ^4.5.0
+  intl: ^0.17.0
 
 dev_dependencies:
   flutter_test:

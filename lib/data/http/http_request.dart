@@ -351,4 +351,87 @@ class HttpRequestHelper {
 
     return res.statusCode;
   }
+
+  Future<String> getASpecificDay(String date) async {
+    var headers = {
+      'Connection': 'keep-alive',
+      'Cache-Control': 'max-age=0',
+      'Upgrade-Insecure-Requests': '1',
+      'User-Agent': _userAgent,
+      'Accept':
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      'Sec-GPC': '1',
+      'Sec-Fetch-Site': 'same-origin',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-User': '?1',
+      'Sec-Fetch-Dest': 'document',
+      'Referer':
+          'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml',
+      'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Cookie': 'JSESSIONID=$_jSessionId; AGIMUS=$_agimus',
+      'Accept-Encoding': 'gzip',
+    };
+
+    var res = await http.get(
+        Uri.parse(
+            'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/calendar.xhtml'),
+        headers: headers);
+
+    Map<String, String> hiddenInputCal = {};
+
+    scraper
+        .parse(res.body)
+        .getElementById('formCal')!
+        .querySelectorAll('input')
+        .forEach((element) {
+      if (element.attributes['value'] != null) {
+        hiddenInputCal[element.attributes['name']!] =
+            element.attributes['value']!;
+      }
+    });
+    return await postDayCalendar(
+      hiddenInputCal['org.apache.myfaces.trinidad.faces.FORM']!,
+      hiddenInputCal['_noJavaScript']!,
+      hiddenInputCal['javax.faces.ViewState']!,
+      date,
+    );
+  }
+
+  Future<String> postDayCalendar(
+      String facesFormCalendar,
+      String noJavaScriptCalendar,
+      String viewStateCalendar,
+      String date) async {
+    var headers = {
+      'Connection': 'keep-alive',
+      'Cache-Control': 'max-age=0',
+      'Upgrade-Insecure-Requests': '1',
+      'Origin': 'https://vtmob.uphf.fr',
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': _userAgent,
+      'Accept':
+          'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      'Sec-GPC': '1',
+      'Sec-Fetch-Site': 'same-origin',
+      'Sec-Fetch-Mode': 'navigate',
+      'Sec-Fetch-User': '?1',
+      'Sec-Fetch-Dest': 'document',
+      'Referer':
+          'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/calendar.xhtml',
+      'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7',
+      'Cookie': 'JSESSIONID=$_jSessionId; AGIMUS=$_agimus',
+      'Accept-Encoding': 'gzip',
+    };
+
+    var data =
+        'formCal:date=$date&org.apache.myfaces.trinidad.faces.FORM=$facesFormCalendar&_noJavaScript=$noJavaScriptCalendar&javax.faces.ViewState=$viewStateCalendar&source=formCal:hiddenLink';
+
+    await http.post(
+        Uri.parse(
+            'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/calendar.xhtml'),
+        headers: headers,
+        body: data);
+
+    return await _getVt();
+  }
 }
