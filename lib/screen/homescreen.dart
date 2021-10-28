@@ -105,7 +105,30 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           } else if (snapshot.hasError) {
-            return Center(child: Text(snapshot.error.toString()));
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  snapshot.error.toString(),
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      cas = HttpRequestHelper.instance
+                          .getCas(widget.username, widget.password);
+                      _getDay();
+                    });
+                  },
+                  child: const Text(
+                      'Cliquez ici pour essayer de vous reconnecter'),
+                ),
+              ],
+            );
           } else {
             return const LinearProgressIndicator();
           }
