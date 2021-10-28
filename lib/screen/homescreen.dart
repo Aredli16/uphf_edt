@@ -21,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Future<String> cas;
   String currentDay = 'Emploi du temps';
+  DateTime lastDateSelected = DateTime.now();
 
   @override
   void initState() {
@@ -58,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 DateTime? selectedDate = await showDatePicker(
                   context: context,
                   locale: const Locale("fr", "FR"),
-                  initialDate: DateTime.now(),
+                  initialDate: lastDateSelected,
                   firstDate: DateTime.now().subtract(const Duration(days: 365)),
                   lastDate: DateTime.now().add(
                     const Duration(days: 365),
@@ -71,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     cas = HttpRequestHelper.instance
                         .getASpecificDay(dateWithFormat);
                     _getDay();
+                    lastDateSelected = selectedDate;
                   });
                 }
               },
@@ -85,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   cas = HttpRequestHelper.instance
                       .getASpecificDay(todayWithFormat);
                   _getDay();
+                  lastDateSelected = DateTime.now();
                 });
               },
               icon: const Icon(Icons.today))),
@@ -149,11 +152,14 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               cas = HttpRequestHelper.instance.getNextPage();
               _getDay();
+              lastDateSelected = lastDateSelected.add(const Duration(days: 1));
             });
           } else {
             setState(() {
               cas = HttpRequestHelper.instance.getPreviousPage();
               _getDay();
+              lastDateSelected =
+                  lastDateSelected.subtract(const Duration(days: 1));
             });
           }
         },
