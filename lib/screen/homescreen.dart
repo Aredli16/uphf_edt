@@ -170,8 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
         buttonSize: 70.0,
         childrenButtonSize: 70.0,
         spaceBetweenChildren: 25.0,
-        child: Image.asset(
-            'assets/ic_launcher/res/mipmap-xxxhdpi/ic_launcher.png'),
+        child: Image.asset('assets/res/mipmap-xxxhdpi/ic_launcher.png'),
         heroTag: 'uphf_logo_tag',
         children: [
           SpeedDialChild(

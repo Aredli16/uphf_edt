@@ -62,7 +62,7 @@ flutter_icons:
   android: true
   ios: true
   remove_alpha_ios: true
-  image_path: "assets/ic_launcher/1024.png"
+  image_path: "assets/1024.png"
 
 flutter_native_splash:
   color: "#ffffff" 
@@ -87,7 +87,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/2560px-UPHF_logo.svg.png
-    - assets/ic_launcher/res/mipmap-xxxhdpi/ic_launcher.png
+    - assets/res/mipmap-xxxhdpi/ic_launcher.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.
