@@ -3,7 +3,7 @@
     package="fr.aredli.uphf.edt">
   <uses-permission android:name="android.permission.INTERNET" />
   <application
-      android:label="UPHF-EDT"
+      android:label="Mes Cours"
       android:icon="@mipmap/ic_launcher">
     <activity
         android:name=".MainActivity"
