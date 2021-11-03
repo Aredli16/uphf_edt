@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:html/dom.dart';
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' as scraper;
@@ -45,6 +47,10 @@ class HttpRequestHelper {
     var res = await http.get(Uri.parse('https://cas.uphf.fr/cas/login?$query'),
         headers: headers);
 
+    if (res.statusCode != 200) {
+      throw Exception("Impossible de se connecter à l'hôte distant");
+    }
+
     _jSessionId = res.headers['set-cookie']!.substring(11, 43);
 
     Map<String, String> hiddenInput = {};
@@ -65,10 +71,6 @@ class HttpRequestHelper {
     _eventId = hiddenInput['_eventId']!;
     _ipAddress = hiddenInput['ipAddress']!;
     _submit = hiddenInput['submit']!;
-
-    if (res.statusCode != 200) {
-      throw Exception("Impossible de se connecter à l'hôte distant");
-    }
 
     return await _postLogin();
   }
@@ -110,12 +112,12 @@ class HttpRequestHelper {
         headers: headers,
         body: data);
 
-    _agimus = res.headers['set-cookie']!.substring(7, 81);
-    String location = res.headers['location']!;
-
     if (res.statusCode != 302) {
       throw Exception("Impossible de d'identifier l'utilisateur");
     }
+
+    _agimus = res.headers['set-cookie']!.substring(7, 81);
+    String location = res.headers['location']!;
 
     return await _getVtTicket(location);
   }
@@ -141,15 +143,16 @@ class HttpRequestHelper {
 
     var res = await http.get(Uri.parse(location), headers: headers);
 
+    if (res.statusCode != 200) {
+      throw Exception('Impossible de récuperer le ticket de connexion');
+    }
+
     _jSessionId = scraper
         .parse(res.body)
         .getElementsByTagName('link')[2]
         .attributes['href']!
-        .substring(74, 106);
-
-    if (res.statusCode != 200) {
-      throw Exception('Impossible de récuperer le ticket de connexion');
-    }
+        .split(';')[1]
+        .substring(11, 43);
 
     return await _getVt();
   }
@@ -178,9 +181,13 @@ class HttpRequestHelper {
             'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml;jsessionid=$_jSessionId'),
         headers: headers);
 
-    _getNewHiddenInputState(res.body);
-
     if (res.statusCode != 200) {
+      throw Exception("Impossible de récupérer l'emploi du temps");
+    }
+
+    try {
+      _getNewHiddenInputState(res.body);
+    } catch (e) {
       throw Exception("Impossible de récupérer l'emploi du temps");
     }
 
@@ -218,8 +225,6 @@ class HttpRequestHelper {
         headers: headers,
         body: data);
 
-    _getNewHiddenInputState(res.body);
-
     if (res.statusCode != 200) {
       try {
         return await getCas(_username, _password);
@@ -227,6 +232,13 @@ class HttpRequestHelper {
         throw Exception('Erreur durant la récupération de la prochaine page');
       }
     }
+
+    try {
+      _getNewHiddenInputState(res.body);
+    } catch (e) {
+      throw Exception('Erreur durant la récupération de la prochaine page');
+    }
+
     return res.body;
   }
 
@@ -261,14 +273,18 @@ class HttpRequestHelper {
         headers: headers,
         body: data);
 
-    _getNewHiddenInputState(res.body);
-
     if (res.statusCode != 200) {
       try {
         return await getCas(_username, _password);
       } catch (e) {
-        throw Exception('Erreur durant la récupération de la prochaine page');
+        throw Exception('Erreur durant la récupération de la page precédente');
       }
+    }
+
+    try {
+      _getNewHiddenInputState(res.body);
+    } catch (e) {
+      throw Exception('Erreur durant la récupération de la page precédente');
     }
 
     return res.body;
@@ -409,19 +425,6 @@ class HttpRequestHelper {
             'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/calendar.xhtml'),
         headers: headers);
 
-    Map<String, String> hiddenInputCal = {};
-
-    scraper
-        .parse(res.body)
-        .getElementById('formCal')!
-        .querySelectorAll('input')
-        .forEach((element) {
-      if (element.attributes['value'] != null) {
-        hiddenInputCal[element.attributes['name']!] =
-            element.attributes['value']!;
-      }
-    });
-
     if (res.statusCode != 200) {
       try {
         return await getCas(_username, _password);
@@ -429,6 +432,23 @@ class HttpRequestHelper {
         throw Exception(
             'Erreur lors du chargement de la page à la date: $date');
       }
+    }
+
+    Map<String, String> hiddenInputCal = {};
+
+    try {
+      scraper
+          .parse(res.body)
+          .getElementById('formCal')!
+          .querySelectorAll('input')
+          .forEach((element) {
+        if (element.attributes['value'] != null) {
+          hiddenInputCal[element.attributes['name']!] =
+              element.attributes['value']!;
+        }
+      });
+    } catch (e) {
+      throw Exception('Erreur lors du chargement de la page à la date: $date');
     }
 
     return await postDayCalendar(
