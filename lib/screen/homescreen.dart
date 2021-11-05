@@ -50,47 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(currentDay.toUpperCase()),
-          centerTitle: true,
-          actions: [
-            IconButton(
-              onPressed: () async {
-                DateTime? selectedDate = await showDatePicker(
-                  context: context,
-                  locale: const Locale("fr", "FR"),
-                  initialDate: lastDateSelected,
-                  firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                  lastDate: DateTime.now().add(
-                    const Duration(days: 365),
-                  ),
-                );
-                if (selectedDate != null) {
-                  DateFormat format = DateFormat('d/M/y');
-                  String dateWithFormat = format.format(selectedDate);
-                  setState(() {
-                    cas = HttpRequestHelper.instance
-                        .getASpecificDay(dateWithFormat);
-                    _getDay();
-                    lastDateSelected = selectedDate;
-                  });
-                }
-              },
-              icon: const Icon(Icons.calendar_today),
-            ),
-          ],
-          leading: IconButton(
-              onPressed: () {
-                DateFormat format = DateFormat("d/M/y");
-                String todayWithFormat = format.format(DateTime.now());
-                setState(() {
-                  cas = HttpRequestHelper.instance
-                      .getASpecificDay(todayWithFormat);
-                  _getDay();
-                  lastDateSelected = DateTime.now();
-                });
-              },
-              icon: const Icon(Icons.today))),
+      appBar: buildAppBar(context),
       body: FutureBuilder<String>(
         future: cas,
         builder: (context, snapshot) {
@@ -139,50 +99,103 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         },
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        iconSize: 30.0,
-        unselectedFontSize: 14.0,
-        unselectedItemColor: Colors.blue,
-        items: const [
-          BottomNavigationBarItem(
-              icon: Icon(Icons.navigate_before), label: 'Précedent'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.navigate_next), label: 'Suivant'),
-        ],
-        onTap: (value) {
-          if (value == 1) {
-            setState(() {
-              cas = HttpRequestHelper.instance.getNextPage();
-              _getDay();
-              lastDateSelected = lastDateSelected.add(const Duration(days: 1));
-            });
-          } else {
-            setState(() {
-              cas = HttpRequestHelper.instance.getPreviousPage();
-              _getDay();
-              lastDateSelected =
-                  lastDateSelected.subtract(const Duration(days: 1));
-            });
-          }
-        },
-      ),
-      floatingActionButton: SpeedDial(
-        backgroundColor: Colors.transparent,
-        elevation: 0.0,
-        buttonSize: 70.0,
-        childrenButtonSize: 70.0,
-        spaceBetweenChildren: 25.0,
-        child: Image.asset('assets/res/mipmap-xxxhdpi/ic_launcher.png'),
-        heroTag: 'uphf_logo_tag',
-        children: [
-          SpeedDialChild(
-            child: const Icon(Icons.logout),
-            label: "Deconnexion",
-            onTap: disconnectUser,
-          )
-        ],
-      ),
+      bottomNavigationBar: buildNavigation(),
+      floatingActionButton: buildMiddleButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
+  }
+
+  BottomNavigationBar buildNavigation() {
+    return BottomNavigationBar(
+      iconSize: 30.0,
+      unselectedFontSize: 14.0,
+      unselectedItemColor: Colors.blue,
+      items: const [
+        BottomNavigationBarItem(
+            icon: Icon(Icons.navigate_before), label: 'Précedent'),
+        BottomNavigationBarItem(
+            icon: Icon(Icons.navigate_next), label: 'Suivant'),
+      ],
+      onTap: (value) {
+        if (value == 1) {
+          setState(() {
+            cas = HttpRequestHelper.instance.getNextPage();
+            _getDay();
+            lastDateSelected = lastDateSelected.add(const Duration(days: 1));
+          });
+        } else {
+          setState(() {
+            cas = HttpRequestHelper.instance.getPreviousPage();
+            _getDay();
+            lastDateSelected =
+                lastDateSelected.subtract(const Duration(days: 1));
+          });
+        }
+      },
+    );
+  }
+
+  SpeedDial buildMiddleButton() {
+    return SpeedDial(
+      backgroundColor: Colors.transparent,
+      elevation: 0.0,
+      buttonSize: 70.0,
+      childrenButtonSize: 70.0,
+      spaceBetweenChildren: 25.0,
+      child: Image.asset('assets/res/mipmap-xxxhdpi/ic_launcher.png'),
+      heroTag: 'uphf_logo_tag',
+      children: [
+        SpeedDialChild(
+          child: const Icon(Icons.logout),
+          label: "Deconnexion",
+          onTap: disconnectUser,
+        )
+      ],
+    );
+  }
+
+  AppBar buildAppBar(BuildContext context) {
+    return AppBar(
+      title: Text(currentDay.toUpperCase()),
+      centerTitle: true,
+      actions: [
+        IconButton(
+          onPressed: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              locale: const Locale("fr", "FR"),
+              initialDate: lastDateSelected,
+              firstDate: DateTime.now().subtract(const Duration(days: 365)),
+              lastDate: DateTime.now().add(
+                const Duration(days: 365),
+              ),
+            );
+            if (selectedDate != null) {
+              DateFormat format = DateFormat('d/M/y');
+              String dateWithFormat = format.format(selectedDate);
+              setState(() {
+                cas =
+                    HttpRequestHelper.instance.getASpecificDay(dateWithFormat);
+                _getDay();
+                lastDateSelected = selectedDate;
+              });
+            }
+          },
+          icon: const Icon(Icons.calendar_today),
+        ),
+      ],
+      leading: IconButton(
+        onPressed: () {
+          DateFormat format = DateFormat("d/M/y");
+          String todayWithFormat = format.format(DateTime.now());
+          setState(() {
+            cas = HttpRequestHelper.instance.getASpecificDay(todayWithFormat);
+            _getDay();
+            lastDateSelected = DateTime.now();
+          });
+        },
+        icon: const Icon(Icons.today),
+      ),
     );
   }
 }

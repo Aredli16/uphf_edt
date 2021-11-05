@@ -1,6 +1,12 @@
 import 'package:web_scraper/web_scraper.dart';
 
+/// Scrap class for scraping the website
+///
+/// This class is used to scrape the website and return the data
+///
+/// All method are static
 class Scrap {
+  /// Scrap the website and return the day of the current page
   static String getDay(String html) {
     final webScraper = WebScraper();
     if (webScraper.loadFromString(html)) {
@@ -10,6 +16,7 @@ class Scrap {
     }
   }
 
+  /// Scrap the website and return the cours list of the page
   static List<Map<String, String>> getCours(String html) {
     final webScraper = WebScraper();
     if (webScraper.loadFromString(html)) {
