@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/data/http/http_request.dart';
@@ -118,12 +119,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
       onTap: (value) {
         if (value == 1) {
+          HapticFeedback.vibrate();
           setState(() {
             cas = HttpRequestHelper.instance.getNextPage();
             _getDay();
             lastDateSelected = lastDateSelected.add(const Duration(days: 1));
           });
         } else {
+          HapticFeedback.vibrate();
           setState(() {
             cas = HttpRequestHelper.instance.getPreviousPage();
             _getDay();
