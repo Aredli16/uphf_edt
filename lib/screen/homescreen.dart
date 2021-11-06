@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    snapshot.error.toString(),
+                    snapshot.error.toString().replaceAll('Exception: ', ''),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         color: Colors.red,

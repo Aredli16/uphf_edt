@@ -57,8 +57,14 @@ class HttpRequestHelper {
     };
     var query = params.entries.map((p) => '${p.key}=${p.value}').join('&');
 
-    var res = await http.get(Uri.parse('https://cas.uphf.fr/cas/login?$query'),
-        headers: headers);
+    http.Response res;
+    try {
+      // Try to get the first page. If it fails, it means that we don't have a connexion between the server and the client
+      res = await http.get(Uri.parse('https://cas.uphf.fr/cas/login?$query'),
+          headers: headers);
+    } catch (e) {
+      throw Exception("Impossible de se connecter à l'hôte distant");
+    }
 
     if (res.statusCode != 200) {
       // Error during the request to the server (maybe the server is down) or the server returned an error
@@ -285,13 +291,20 @@ class HttpRequestHelper {
     var data =
         'org.apache.myfaces.trinidad.faces.FORM=$_facesForm&_noJavaScript=$_noJavaScript&javax.faces.ViewState=$_viewState&source=redirectForm%3AsemSuiv';
 
-    var res = await http.post(
-        Uri.parse(
-            'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml'),
-        headers: headers,
-        body: data);
+    http.Response? res;
+    try {
+      // Try to get the second page. If it fails, the connection is lost
+      res = await http.post(
+          Uri.parse(
+              'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml'),
+          headers: headers,
+          body: data);
+    } catch (e) {
+      // The connection is lost so try to get the first page again
+      await getCas(_username, _password);
+    }
 
-    if (res.statusCode != 200) {
+    if (res!.statusCode != 200) {
       // Error during the request to the server
       try {
         // Try to get initial page and reconnect the user
@@ -343,13 +356,20 @@ class HttpRequestHelper {
     var data =
         'org.apache.myfaces.trinidad.faces.FORM=$_facesForm&_noJavaScript=$_noJavaScript&javax.faces.ViewState=$_viewState&source=redirectForm%3AsemPrec';
 
-    var res = await http.post(
-        Uri.parse(
-            'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml'),
-        headers: headers,
-        body: data);
+    http.Response? res;
+    try {
+      // Try to get the previous page. If it fails, the connection is lost
+      res = await http.post(
+          Uri.parse(
+              'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/welcome.xhtml'),
+          headers: headers,
+          body: data);
+    } catch (e) {
+      // The connection is lost so try to get the first page again
+      await getCas(_username, _password);
+    }
 
-    if (res.statusCode != 200) {
+    if (res!.statusCode != 200) {
       // Error during the request to the server
       try {
         // Try to get initial page and reconnect the user
@@ -396,12 +416,19 @@ class HttpRequestHelper {
       'Accept-Encoding': 'gzip',
     };
 
-    var res = await http.get(
-        Uri.parse(
-            'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/calendar.xhtml'),
-        headers: headers);
+    http.Response? res;
+    try {
+      // Try to get the page. If it fails, the connection is lost
+      res = await http.get(
+          Uri.parse(
+              'https://vtmob.uphf.fr/esup-vtclient-up4/stylesheets/mobile/calendar.xhtml'),
+          headers: headers);
+    } catch (e) {
+      // The connection is lost so try to get the first page again
+      await getCas(_username, _password);
+    }
 
-    if (res.statusCode != 200) {
+    if (res!.statusCode != 200) {
       // Error during the request
       try {
         // Try to get initial page and reconnect user
@@ -521,8 +548,14 @@ class HttpRequestHelper {
     };
     var query = params.entries.map((p) => '${p.key}=${p.value}').join('&');
 
-    var res = await http.get(Uri.parse('https://cas.uphf.fr/cas/login?$query'),
-        headers: headers);
+    http.Response res;
+    try {
+      // Try to get the page. If it fails, the connection is lost
+      res = await http.get(Uri.parse('https://cas.uphf.fr/cas/login?$query'),
+          headers: headers);
+    } catch (e) {
+      throw Exception('Erreur lors de la connexion au serveur');
+    }
 
     var jSessionId = res.headers['set-cookie']!.substring(11, 43);
 
