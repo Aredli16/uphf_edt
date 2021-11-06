@@ -33,8 +33,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final prefs = await SharedPreferences.getInstance();
     username = data.name;
     password = data.password;
-    if (!await HttpRequestHelper.instance.isLog(username!, password!)) {
-      return "Identifiant ou mot de passe incorrect";
+    try {
+      if (!await HttpRequestHelper.instance.isLog(username!, password!)) {
+        return "Identifiant ou mot de passe incorrect";
+      }
+    } catch (e) {
+      return e.toString().replaceAll("Exception: ", "");
     }
     prefs.setString('username', username!);
     prefs.setString('password', password!);
@@ -66,7 +70,8 @@ class _LoginScreenState extends State<LoginScreen> {
       messages: LoginMessages(
         userHint: "Nom d'utilisateur",
         passwordHint: "Mot de passe",
-        flushbarTitleError: "Erreur",
+        loginButton: "Connexion".toUpperCase(),
+        flushbarTitleError: "Erreur".toUpperCase(),
       ),
     );
   }

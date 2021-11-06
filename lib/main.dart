@@ -32,6 +32,18 @@ class MyApp extends StatelessWidget {
   final String? username;
   final String? password;
 
+  //Returns the current screen to display
+  Widget _getScreen() {
+    if (username == null || password == null) {
+      return const LoginScreen();
+    } else {
+      return HomeScreen(
+        username: username!,
+        password: password!,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -46,12 +58,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         textTheme: GoogleFonts.ubuntuTextTheme(),
       ),
-      home: username == null
-          ? const LoginScreen()
-          : HomeScreen(
-              username: username!,
-              password: password!,
-            ),
+      home: _getScreen(),
     );
   }
 }
