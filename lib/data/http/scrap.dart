@@ -24,25 +24,32 @@ class Scrap {
           webScraper.getElement('div > div > ul > li', ['data-role']);
       coursElements.removeWhere((element) {
         return element['attributes']['data-role'] == null;
-      });
+      }); // Get only the cours
 
-      List<String> hoursElements =
-          webScraper.getElementTitle('p.ui-li-aside > strong');
+      List<String> typeElement = webScraper
+          .getElementTitle('div > ul > li > span'); // Get the type of the cours
 
-      List<String> roomElements = webScraper.getElementTitle('li > h3');
+      List<String> hoursElements = webScraper
+          .getElementTitle('p.ui-li-aside > strong'); // Get only the hours
+
+      List<String> roomElements =
+          webScraper.getElementTitle('li > h3'); // Get only the room
+
+      List<Map<String, dynamic>> information =
+          webScraper.getElement("div > ul > li > p", ['style']);
+      information.removeWhere((element) =>
+          element['attributes']['style'] != 'color:red;'); // Get information
 
       List<Map<String, String>> cours = [];
       for (int i = 0; i < coursElements.length; i++) {
         cours.add({
-          'cours': coursElements[i]['title'].split("(")[0],
+          'cours': coursElements[i]['title'].split("(")[0].trim(),
           'hour': hoursElements[i].trim(),
-          'room': roomElements[i].trim().split("(")[0],
-          'type': coursElements[i]['title'].substring(
-              coursElements[i]['title'].length - 2,
-              coursElements[i]['title'].length)
+          'room': roomElements[i].split("(")[0].trim(),
+          'type': typeElement[i].trim(),
+          'information': information[0]['title'].trim(),
         });
       }
-
       return cours;
     } else {
       throw Exception('Failed to load EDT');
