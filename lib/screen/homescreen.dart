@@ -65,6 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   cours[index]['hour']!,
                   cours[index]['cours']!,
                   cours[index]['type']!,
+                  information: cours[index]['information']!,
                 );
               },
             );
