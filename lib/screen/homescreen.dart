@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/data/http/http_request.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
+import 'package:uphf_edt/data/models/cours.dart';
 import 'package:uphf_edt/screen/lesson.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
@@ -56,17 +57,11 @@ class _HomeScreenState extends State<HomeScreen> {
         future: cas,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            List<Map<String, String>> cours = Scrap.getCours(snapshot.data!);
+            List<Cours> cours = Scrap.getCours(snapshot.data!);
             return ListView.builder(
               itemCount: cours.length,
               itemBuilder: (context, index) {
-                return Lesson(
-                  cours[index]['room']!,
-                  cours[index]['hour']!,
-                  cours[index]['cours']!,
-                  cours[index]['type']!,
-                  information: cours[index]['information']!,
-                );
+                return Lesson(cours[index]);
               },
             );
           } else if (snapshot.hasError) {

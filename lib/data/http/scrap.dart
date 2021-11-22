@@ -1,3 +1,4 @@
+import 'package:uphf_edt/data/models/cours.dart';
 import 'package:web_scraper/web_scraper.dart';
 
 /// Scrap class for scraping the website
@@ -17,7 +18,7 @@ class Scrap {
   }
 
   /// Scrap the website and return the cours list of the page
-  static List<Map<String, String>> getCours(String html) {
+  static List<Cours> getCours(String html) {
     final webScraper = WebScraper();
     if (webScraper.loadFromString(html)) {
       List<Map<String, dynamic>> coursElements =
@@ -40,15 +41,17 @@ class Scrap {
       information.removeWhere((element) =>
           element['attributes']['style'] != 'color:red;'); // Get information
 
-      List<Map<String, String>> cours = [];
+      List<Cours> cours = [];
       for (int i = 0; i < coursElements.length; i++) {
-        cours.add({
-          'cours': coursElements[i]['title'].split("(")[0].trim(),
-          'hour': hoursElements[i].trim(),
-          'room': roomElements[i].split("(")[0].trim(),
-          'type': typeElement[i].trim(),
-          'information': information[0]['title'].trim(),
-        });
+        cours.add(
+          Cours(
+            coursElements[i]['title'].split("(")[0].trim(),
+            roomElements[i].split("(")[0].trim(),
+            hoursElements[i].trim(),
+            typeElement[i].trim(),
+            information[0]['title'].trim(),
+          ),
+        );
       }
       return cours;
     } else {
