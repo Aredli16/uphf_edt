@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uphf_edt/data/http/http_request.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
-import 'package:uphf_edt/data/models/cours.dart';
+import 'package:uphf_edt/data/models/school_day.dart';
 import 'package:uphf_edt/screen/lesson.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
@@ -21,26 +20,37 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Future<String> cas;
-  String currentDay = 'Emploi du temps';
-  DateTime lastDateSelected = DateTime.now();
+  late Future<SchoolDay> schoolDay; // List of future school days
+  String currentDayTime =
+      'Emploi du temps'; // Current day time to display in the app bar
+  DateTime lastDateSelectedCalendar =
+      DateTime.now(); // Last date selected in the calendar
 
   @override
   void initState() {
     super.initState();
-    cas = HttpRequestHelper.instance.getCas(widget.username, widget.password);
+    schoolDay = Scrap.getSchoolDayToday(
+        widget.username, widget.password); // Get the school day today
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      _getDay();
+      _getDay(); // Get the current day to display in the app bar
     });
   }
 
+  /// Get the current day to display in the app bar
+  /// If the current day is not the same as the last day selected in the calendar,
+  /// we get the school day for the current day
   void _getDay() async {
-    String day = Scrap.getDay(await cas);
+    SchoolDay _schoolDay = await schoolDay;
     setState(() {
-      currentDay = day;
+      currentDayTime = _schoolDay.dayTime;
     });
   }
 
+  /// Disconnect the user
+  ///
+  /// Delete the username and password in the shared preferences
+  ///
+  /// Go to the login screen
   void disconnectUser() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('username');
@@ -53,15 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(context),
-      body: FutureBuilder<String>(
-        future: cas,
+      body: FutureBuilder<SchoolDay>(
+        future: schoolDay, // Get the school day
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            List<Cours> cours = Scrap.getCours(snapshot.data!);
             return ListView.builder(
-              itemCount: cours.length,
+              itemCount: snapshot.data!.cours.length,
               itemBuilder: (context, index) {
-                return Lesson(cours[index]);
+                return Lesson(snapshot.data!.cours[index]);
               },
             );
           } else if (snapshot.hasError) {
@@ -80,8 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        cas = HttpRequestHelper.instance
-                            .getCas(widget.username, widget.password);
+                        schoolDay = Scrap.getSchoolDayToday(
+                            widget.username, widget.password);
                         _getDay();
                       });
                     },
@@ -117,17 +126,18 @@ class _HomeScreenState extends State<HomeScreen> {
         if (value == 1) {
           HapticFeedback.vibrate();
           setState(() {
-            cas = HttpRequestHelper.instance.getNextPage();
+            schoolDay = Scrap.getNextSchoolDay();
             _getDay();
-            lastDateSelected = lastDateSelected.add(const Duration(days: 1));
+            lastDateSelectedCalendar =
+                lastDateSelectedCalendar.add(const Duration(days: 1));
           });
         } else {
           HapticFeedback.vibrate();
           setState(() {
-            cas = HttpRequestHelper.instance.getPreviousPage();
+            schoolDay = Scrap.getPreviousSchoolDay();
             _getDay();
-            lastDateSelected =
-                lastDateSelected.subtract(const Duration(days: 1));
+            lastDateSelectedCalendar =
+                lastDateSelectedCalendar.subtract(const Duration(days: 1));
           });
         }
       },
@@ -155,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   AppBar buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text(currentDay.toUpperCase()),
+      title: Text(currentDayTime.toUpperCase()),
       centerTitle: true,
       actions: [
         IconButton(
@@ -163,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
             DateTime? selectedDate = await showDatePicker(
               context: context,
               locale: const Locale("fr", "FR"),
-              initialDate: lastDateSelected,
+              initialDate: lastDateSelectedCalendar,
               firstDate: DateTime.now().subtract(const Duration(days: 365)),
               lastDate: DateTime.now().add(
                 const Duration(days: 365),
@@ -173,10 +183,9 @@ class _HomeScreenState extends State<HomeScreen> {
               DateFormat format = DateFormat('d/M/y');
               String dateWithFormat = format.format(selectedDate);
               setState(() {
-                cas =
-                    HttpRequestHelper.instance.getASpecificDay(dateWithFormat);
+                schoolDay = Scrap.getASpecifiDay(dateWithFormat);
                 _getDay();
-                lastDateSelected = selectedDate;
+                lastDateSelectedCalendar = selectedDate;
               });
             }
           },
@@ -188,9 +197,9 @@ class _HomeScreenState extends State<HomeScreen> {
           DateFormat format = DateFormat("d/M/y");
           String todayWithFormat = format.format(DateTime.now());
           setState(() {
-            cas = HttpRequestHelper.instance.getASpecificDay(todayWithFormat);
+            schoolDay = Scrap.getASpecifiDay(todayWithFormat);
             _getDay();
-            lastDateSelected = DateTime.now();
+            lastDateSelectedCalendar = DateTime.now();
           });
         },
         icon: const Icon(Icons.today),
