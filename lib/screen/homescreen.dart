@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:theme_provider/theme_provider.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
 import 'package:uphf_edt/data/models/school_day.dart';
 import 'package:uphf_edt/screen/lesson.dart';
@@ -119,14 +120,19 @@ class _HomeScreenState extends State<HomeScreen> {
       Padding(
         padding: const EdgeInsets.only(top: 12.0),
         child: Column(
-          children: const [
+          children: [
             Icon(
               Icons.navigate_before,
-              color: Colors.blue,
+              color: ThemeProvider.themeOf(context).data == ThemeData.dark()
+                  ? Colors.white
+                  : Colors.black,
             ),
             Text(
               'Précédent',
-              style: TextStyle(color: Colors.blue),
+              style: TextStyle(
+                  color: ThemeProvider.themeOf(context).data == ThemeData.dark()
+                      ? Colors.white
+                      : Colors.black),
             ),
           ],
         ),
@@ -134,14 +140,20 @@ class _HomeScreenState extends State<HomeScreen> {
       Padding(
         padding: const EdgeInsets.only(top: 10.0),
         child: Column(
-          children: const [
+          children: [
             Icon(
               Icons.navigate_next,
-              color: Colors.blue,
+              color: ThemeProvider.themeOf(context).data == ThemeData.dark()
+                  ? Colors.white
+                  : Colors.black,
             ),
             Text(
               'Suivant',
-              style: TextStyle(color: Colors.blue),
+              style: TextStyle(
+                color: ThemeProvider.themeOf(context).data == ThemeData.dark()
+                    ? Colors.white
+                    : Colors.black,
+              ),
             ),
           ],
         ),
@@ -151,6 +163,11 @@ class _HomeScreenState extends State<HomeScreen> {
       activeIndex: 0,
       gapLocation: GapLocation.center,
       notchMargin: 4,
+      elevation:
+          ThemeProvider.themeOf(context).data == ThemeData.dark() ? 0 : 8,
+      backgroundColor: ThemeProvider.themeOf(context).data == ThemeData.dark()
+          ? Colors.black54
+          : Colors.white,
       itemCount: 2,
       height: 65,
       tabBuilder: (context, index) {
@@ -185,14 +202,27 @@ class _HomeScreenState extends State<HomeScreen> {
       buttonSize: 70.0,
       childrenButtonSize: 70.0,
       spaceBetweenChildren: 25.0,
-      child: Image.asset('assets/res/mipmap-xxxhdpi/ic_launcher.png'),
+      child: Image.asset(ThemeProvider.themeOf(context).data == ThemeData.dark()
+          ? 'assets/res/mipmap-xxxhdpi/ic_launcher_dark.png'
+          : 'assets/res/mipmap-xxxhdpi/ic_launcher.png'),
       heroTag: 'uphf_logo_tag',
       children: [
         SpeedDialChild(
           child: const Icon(Icons.logout),
           label: "Deconnexion",
           onTap: disconnectUser,
-        )
+        ),
+        SpeedDialChild(
+          child: Icon(ThemeProvider.themeOf(context).data == ThemeData.dark()
+              ? Icons.wb_sunny_sharp
+              : Icons.nightlight_round_outlined),
+          label: ThemeProvider.themeOf(context).data == ThemeData.dark()
+              ? "Mode jour"
+              : "Mode nuit",
+          onTap: () {
+            ThemeProvider.controllerOf(context).nextTheme();
+          },
+        ),
       ],
     );
   }

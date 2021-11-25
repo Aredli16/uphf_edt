@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/screen/homescreen.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
+import 'package:theme_provider/theme_provider.dart';
 
 void main() async {
   LicenseRegistry.addLicense(() async* {
@@ -46,19 +47,30 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
+    return ThemeProvider(
+      saveThemesOnChange: true,
+      loadThemeOnInit: true,
+      themes: [
+        AppTheme.light(),
+        AppTheme.dark(),
       ],
-      supportedLocales: const [
-        Locale("fr"),
-      ],
-      title: 'UHF_EDT',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.ubuntuTextTheme(),
+      child: ThemeConsumer(
+        child: Builder(
+          builder: (context) {
+            return MaterialApp(
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale("fr"),
+              ],
+              title: 'UHF_EDT',
+              theme: ThemeProvider.themeOf(context).data,
+              home: _getScreen(),
+            );
+          },
+        ),
       ),
-      home: _getScreen(),
     );
   }
 }
