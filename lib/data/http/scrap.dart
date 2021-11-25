@@ -56,11 +56,11 @@ class Scrap {
       for (int i = 0; i < coursElements.length; i++) {
         cours.add(
           Cours(
-            coursElements[i]['title'].split("(")[0].trim(),
-            roomElements[i].split("(")[0].trim(),
-            hoursElements[i].trim(),
-            typeElement[i].trim(),
-            information[0]['title'].trim(),
+            name: coursElements[i]['title'].split("(")[0].trim(),
+            room: roomElements[i].split("(")[0].trim(),
+            hour: hoursElements[i].trim(),
+            type: typeElement[i].trim(),
+            informations: information[0]['title'].trim(),
           ),
         );
       }

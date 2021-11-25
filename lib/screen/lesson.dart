@@ -61,7 +61,7 @@ class Lesson extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: getColor(cours.type),
+                    colors: getColor(cours.type ?? "TD"),
                   ),
                   borderRadius: const BorderRadius.all(Radius.circular(40))),
               child: Column(
@@ -73,16 +73,19 @@ class Lesson extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          cours.name,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            cours.name ?? "",
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         Text(
-                          cours.type.toUpperCase(),
+                          cours.type?.toUpperCase() ?? "",
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.white,
@@ -102,14 +105,14 @@ class Lesson extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          cours.room,
+                          cours.room ?? "",
                           style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
                               color: Colors.white),
                         ),
                         Text(
-                          cours.hour,
+                          cours.hour ?? "",
                           style: const TextStyle(
                               fontSize: 18,
                               color: Colors.white,
@@ -125,7 +128,7 @@ class Lesson extends StatelessWidget {
               child: Align(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 2.0),
-                  child: Text(cours.informations,
+                  child: Text(cours.informations ?? "",
                       style: const TextStyle(
                           fontStyle: FontStyle.italic, color: Colors.red)),
                 ),
