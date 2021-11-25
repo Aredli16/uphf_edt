@@ -1,3 +1,6 @@
+import 'dart:developer';
+
+import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -111,17 +114,48 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  BottomNavigationBar buildNavigation() {
-    return BottomNavigationBar(
-      iconSize: 30.0,
-      unselectedFontSize: 14.0,
-      unselectedItemColor: Colors.blue,
-      items: const [
-        BottomNavigationBarItem(
-            icon: Icon(Icons.navigate_before), label: 'Précedent'),
-        BottomNavigationBarItem(
-            icon: Icon(Icons.navigate_next), label: 'Suivant'),
-      ],
+  AnimatedBottomNavigationBar buildNavigation() {
+    List<Widget> icons = [
+      Padding(
+        padding: const EdgeInsets.only(top: 12.0),
+        child: Column(
+          children: const [
+            Icon(
+              Icons.navigate_before,
+              color: Colors.blue,
+            ),
+            Text(
+              'Précédent',
+              style: TextStyle(color: Colors.blue),
+            ),
+          ],
+        ),
+      ),
+      Padding(
+        padding: const EdgeInsets.only(top: 10.0),
+        child: Column(
+          children: const [
+            Icon(
+              Icons.navigate_next,
+              color: Colors.blue,
+            ),
+            Text(
+              'Suivant',
+              style: TextStyle(color: Colors.blue),
+            ),
+          ],
+        ),
+      )
+    ];
+    return AnimatedBottomNavigationBar.builder(
+      activeIndex: 0,
+      gapLocation: GapLocation.center,
+      notchMargin: 4,
+      itemCount: 2,
+      height: 65,
+      tabBuilder: (context, index) {
+        return icons[context];
+      },
       onTap: (value) {
         if (value == 1) {
           HapticFeedback.vibrate();
