@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +10,19 @@ import 'package:uphf_edt/screen/introscreen.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
 import 'package:theme_provider/theme_provider.dart';
 
+// Used to accept the certificate for https if can't be validated
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() async {
+  HttpOverrides.global =
+      MyHttpOverrides(); // Used to accept the certificate for https if can't be validated
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
