@@ -5,7 +5,9 @@ import 'package:uphf_edt/data/http/http_request.dart';
 import 'homescreen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({Key? key, required this.isFirstTime}) : super(key: key);
+
+  final bool isFirstTime;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -58,6 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (context) => HomeScreen(
             username: username!,
             password: password!,
+            isFirstTime: widget.isFirstTime,
           ),
         ));
       },

@@ -58,11 +58,14 @@ class MyApp extends StatelessWidget {
     if (firstTime) {
       return const IntroScreen();
     } else if (username == null || password == null) {
-      return const LoginScreen();
+      return const LoginScreen(
+        isFirstTime: false,
+      );
     } else {
       return HomeScreen(
         username: username!,
         password: password!,
+        isFirstTime: false,
       );
     }
   }

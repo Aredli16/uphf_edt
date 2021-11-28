@@ -179,7 +179,9 @@ class _IntroScreenState extends State<IntroScreen> {
     prefs.setBool("first_run", false);
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
+        builder: (context) => const LoginScreen(
+          isFirstTime: true,
+        ),
       ),
     );
   }

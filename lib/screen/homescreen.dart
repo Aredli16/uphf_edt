@@ -8,6 +8,7 @@ import 'package:new_version/new_version.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite_viewer/sqlite_viewer.dart';
 import 'package:theme_provider/theme_provider.dart';
+import 'package:tutorial/tutorial.dart';
 import 'package:uphf_edt/data/database/dbhelper.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
 import 'package:uphf_edt/data/models/school_day.dart';
@@ -16,11 +17,16 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key, required this.username, required this.password})
+  const HomeScreen(
+      {Key? key,
+      required this.username,
+      required this.password,
+      required this.isFirstTime})
       : super(key: key);
 
   final String username;
   final String password;
+  final bool isFirstTime;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -35,8 +41,84 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isOnline = true; // Is the app online ?
   int year = DateTime.now().year; // Current year
 
+  List<TutorialItens> itens = []; // List of tutorial itens
+  var keyCoursList = GlobalKey();
+  var keyToday = GlobalKey();
+  var keyCalendar = GlobalKey();
+  var keyMiddleButton = GlobalKey();
+
   @override
   void initState() {
+    if (widget.isFirstTime) {
+      itens.addAll({
+        TutorialItens(
+          globalKey: keyCoursList,
+          top: 0,
+          bottom: 0,
+          left: 80,
+          right: 80,
+          touchScreen: true,
+          children: const [
+            Text(
+              "Bienvenue sur votre emploi du temps! Retrouvez tous vos cours juste ici.",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(
+              height: 50,
+            ),
+          ],
+          widgetNext: Container(),
+        ),
+        TutorialItens(
+          globalKey: keyToday,
+          touchScreen: true,
+          top: 90,
+          left: 30,
+          children: const [
+            Text(
+              "Revenez à aujourd'hui à tout moment.",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          widgetNext: Container(),
+        ),
+        TutorialItens(
+          globalKey: keyCalendar,
+          touchScreen: true,
+          top: 90,
+          right: 30,
+          children: const [
+            Text(
+              "Vous pouvez choisir un jour en particulier juste là.",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          widgetNext: Container(),
+        ),
+        TutorialItens(
+          globalKey: keyMiddleButton,
+          touchScreen: true,
+          bottom: 105,
+          left: 90,
+          right: 90,
+          children: const [
+            Text(
+              "Accéder aux options de l'application juste ici.",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          widgetNext: Container(),
+        ),
+      });
+
+      Future.delayed(const Duration(microseconds: 200)).then((value) {
+        Tutorial.showTutorial(context, itens);
+      });
+    }
     super.initState();
 
     _checkForUpdates();
@@ -88,8 +170,10 @@ class _HomeScreenState extends State<HomeScreen> {
     prefs.remove('username');
     prefs.remove('password');
     DBHelper.instance.delete();
-    Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => const LoginScreen()));
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => const LoginScreen(
+              isFirstTime: false,
+            )));
   }
 
   Future<void> _tryToReconnect() async {
@@ -102,71 +186,74 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(context),
-      body: FutureBuilder<SchoolDay>(
-        future: schoolDay, // Get the school day
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            isOnline = true;
-            DBHelper.instance.insertCours(snapshot.data!.cours);
-            return ListView.builder(
-              itemCount: snapshot.data!.cours.length,
-              itemBuilder: (context, index) {
-                return Lesson(snapshot.data!.cours[index]);
-              },
-            );
-          } else if (snapshot.hasError) {
-            return FutureBuilder<SchoolDay>(
-              future: DBHelper.instance.getSchoolDay(currentDayTime),
-              builder: (context, snapshot) {
-                isOnline = false;
-                if (snapshot.hasData) {
-                  return RefreshIndicator(
-                    onRefresh: _tryToReconnect,
-                    child: ListView.builder(
-                      itemCount: snapshot.data!.cours.length,
-                      itemBuilder: (context, index) {
-                        return Lesson(snapshot.data!.cours[index]);
-                      },
-                    ),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          snapshot.error
-                              .toString()
-                              .replaceAll('Exception: ', ''),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            setState(() {
-                              schoolDay = Scrap.getSchoolDayToday(
-                                  widget.username, widget.password);
-                              _getDay();
-                            });
-                          },
-                          child: const Text(
-                              'Cliquez ici pour essayer de vous reconnecter'),
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  return const LinearProgressIndicator();
-                }
-              },
-            );
-          } else {
-            return const LinearProgressIndicator();
-          }
-        },
+      body: Container(
+        key: keyCoursList,
+        child: FutureBuilder<SchoolDay>(
+          future: schoolDay, // Get the school day
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              isOnline = true;
+              DBHelper.instance.insertCours(snapshot.data!.cours);
+              return ListView.builder(
+                itemCount: snapshot.data!.cours.length,
+                itemBuilder: (context, index) {
+                  return Lesson(snapshot.data!.cours[index]);
+                },
+              );
+            } else if (snapshot.hasError) {
+              return FutureBuilder<SchoolDay>(
+                future: DBHelper.instance.getSchoolDay(currentDayTime),
+                builder: (context, snapshot) {
+                  isOnline = false;
+                  if (snapshot.hasData) {
+                    return RefreshIndicator(
+                      onRefresh: _tryToReconnect,
+                      child: ListView.builder(
+                        itemCount: snapshot.data!.cours.length,
+                        itemBuilder: (context, index) {
+                          return Lesson(snapshot.data!.cours[index]);
+                        },
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            snapshot.error
+                                .toString()
+                                .replaceAll('Exception: ', ''),
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                schoolDay = Scrap.getSchoolDayToday(
+                                    widget.username, widget.password);
+                                _getDay();
+                              });
+                            },
+                            child: const Text(
+                                'Cliquez ici pour essayer de vous reconnecter'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else {
+                    return const LinearProgressIndicator();
+                  }
+                },
+              );
+            } else {
+              return const LinearProgressIndicator();
+            }
+          },
+        ),
       ),
       bottomNavigationBar: buildNavigation(),
       floatingActionButton: buildMiddleButton(),
@@ -290,6 +377,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   SpeedDial buildMiddleButton() {
     return SpeedDial(
+      key: keyMiddleButton,
       backgroundColor: Colors.transparent,
       elevation: 0.0,
       buttonSize: 70.0,
@@ -373,6 +461,7 @@ class _HomeScreenState extends State<HomeScreen> {
       centerTitle: true,
       actions: [
         IconButton(
+          key: keyCalendar,
           onPressed: () async {
             DateTime? selectedDate = await showDatePicker(
               context: context,
@@ -421,6 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : Container(),
       ],
       leading: IconButton(
+        key: keyToday,
         onPressed: () {
           if (isOnline) {
             DateFormat format = DateFormat("d/M/y");
