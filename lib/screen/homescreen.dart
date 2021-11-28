@@ -28,11 +28,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<SchoolDay> schoolDay; // List of future school days
-  String currentDayTime =
-      'Emploi du temps'; // Current day time to display in the app bar
+  String currentDayTime = DateFormat('EEEE d MMMM', 'FR_fr')
+      .format(DateTime.now()); // Current day time to display in the app bar
   DateTime lastDateSelectedCalendar =
       DateTime.now(); // Last date selected in the calendar
-  bool isOffline = false; // Is the app offline ?
+  bool isOnline = true; // Is the app online ?
   int year = DateTime.now().year; // Current year
 
   @override
@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
         future: schoolDay, // Get the school day
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            isOffline = false;
+            isOnline = true;
             DBHelper.instance.insertCours(snapshot.data!.cours);
             return ListView.builder(
               itemCount: snapshot.data!.cours.length,
@@ -112,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return FutureBuilder<SchoolDay>(
               future: DBHelper.instance.getSchoolDay(currentDayTime),
               builder: (context, snapshot) {
-                isOffline = true;
+                isOnline = false;
                 if (snapshot.hasData) {
                   return ListView.builder(
                     itemCount: snapshot.data!.cours.length,
@@ -225,8 +225,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       onTap: (value) {
         if (value == 1) {
-          if (!isOffline) {
-            HapticFeedback.vibrate();
+          HapticFeedback.vibrate();
+          if (isOnline) {
             setState(() {
               schoolDay = Scrap.getNextSchoolDay();
               _getDay();
@@ -234,7 +234,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   lastDateSelectedCalendar.add(const Duration(days: 1));
             });
           } else {
-            HapticFeedback.vibrate();
             DateTime _dateParsing = DateFormat('EEEE d MMMM yyyy', 'FR_fr')
                 .parse('$currentDayTime $year'.toLowerCase());
             setState(() {
@@ -244,16 +243,14 @@ class _HomeScreenState extends State<HomeScreen> {
               _dateParsing = _dateParsing.add(const Duration(days: 1));
               currentDayTime =
                   DateFormat('EEEE d MMMM', 'FR_fr').format(_dateParsing);
-
-              schoolDay = DBHelper.instance.getSchoolDay(currentDayTime);
               _getDay();
               lastDateSelectedCalendar =
                   lastDateSelectedCalendar.add(const Duration(days: 1));
             });
           }
         } else {
-          if (!isOffline) {
-            HapticFeedback.vibrate();
+          HapticFeedback.vibrate();
+          if (isOnline) {
             setState(() {
               schoolDay = Scrap.getPreviousSchoolDay();
               _getDay();
@@ -261,7 +258,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   lastDateSelectedCalendar.subtract(const Duration(days: 1));
             });
           } else {
-            HapticFeedback.vibrate();
             DateTime _dateParsing = DateFormat('EEEE d MMMM yyyy', 'FR_fr')
                 .parse('$currentDayTime $year'.toLowerCase());
             setState(() {
@@ -271,7 +267,6 @@ class _HomeScreenState extends State<HomeScreen> {
               _dateParsing = _dateParsing.subtract(const Duration(days: 1));
               currentDayTime =
                   DateFormat('EEEE d MMMM', 'FR_fr').format(_dateParsing);
-              schoolDay = DBHelper.instance.getSchoolDay(currentDayTime);
               _getDay();
               lastDateSelectedCalendar =
                   lastDateSelectedCalendar.add(const Duration(days: 1));
@@ -378,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             );
             if (selectedDate != null) {
-              if (!isOffline) {
+              if (isOnline) {
                 DateFormat format = DateFormat('d/M/y');
                 String dateWithFormat = format.format(selectedDate);
                 setState(() {
@@ -388,8 +383,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 });
               } else {
                 setState(() {
-                  schoolDay = DBHelper.instance.getSchoolDay(
-                      DateFormat('EEEE dd MMMM', 'FR_fr').format(selectedDate));
+                  currentDayTime =
+                      DateFormat('EEEE d MMMM', 'FR_fr').format(selectedDate);
                   year = selectedDate.year;
                   _getDay();
                   lastDateSelectedCalendar = selectedDate;
@@ -415,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
       leading: IconButton(
         onPressed: () {
-          if (!isOffline) {
+          if (isOnline) {
             DateFormat format = DateFormat("d/M/y");
             String todayWithFormat = format.format(DateTime.now());
             setState(() {
@@ -425,8 +420,8 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           } else {
             setState(() {
-              schoolDay = DBHelper.instance.getSchoolDay(
-                  DateFormat('EEEE dd MMMM', 'FR_fr').format(DateTime.now()));
+              currentDayTime =
+                  DateFormat('EEEE d MMMM', 'FR_fr').format(DateTime.now());
               year = DateTime.now().year;
               _getDay();
               lastDateSelectedCalendar = DateTime.now();
