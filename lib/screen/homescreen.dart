@@ -92,6 +92,12 @@ class _HomeScreenState extends State<HomeScreen> {
         MaterialPageRoute(builder: (context) => const LoginScreen()));
   }
 
+  Future<void> _tryToReconnect() async {
+    schoolDay = Scrap.getSchoolDayToday(widget.username, widget.password);
+    _getDay();
+    lastDateSelectedCalendar = DateTime.now();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,11 +120,14 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, snapshot) {
                 isOnline = false;
                 if (snapshot.hasData) {
-                  return ListView.builder(
-                    itemCount: snapshot.data!.cours.length,
-                    itemBuilder: (context, index) {
-                      return Lesson(snapshot.data!.cours[index]);
-                    },
+                  return RefreshIndicator(
+                    onRefresh: _tryToReconnect,
+                    child: ListView.builder(
+                      itemCount: snapshot.data!.cours.length,
+                      itemBuilder: (context, index) {
+                        return Lesson(snapshot.data!.cours[index]);
+                      },
+                    ),
                   );
                 } else if (snapshot.hasError) {
                   return Center(
@@ -246,6 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _getDay();
               lastDateSelectedCalendar =
                   lastDateSelectedCalendar.add(const Duration(days: 1));
+              _tryToReconnect();
             });
           }
         } else {
@@ -270,6 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
               _getDay();
               lastDateSelectedCalendar =
                   lastDateSelectedCalendar.add(const Duration(days: 1));
+              _tryToReconnect();
             });
           }
         }
@@ -388,6 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   year = selectedDate.year;
                   _getDay();
                   lastDateSelectedCalendar = selectedDate;
+                  _tryToReconnect();
                 });
               }
             }
@@ -425,6 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
               year = DateTime.now().year;
               _getDay();
               lastDateSelectedCalendar = DateTime.now();
+              _tryToReconnect();
             });
           }
         },
