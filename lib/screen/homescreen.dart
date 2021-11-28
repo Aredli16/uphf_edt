@@ -31,6 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   DateTime lastDateSelectedCalendar =
       DateTime.now(); // Last date selected in the calendar
   bool isOffline = false; // Is the app offline ?
+  int year = DateTime.now().year; // Current year
 
   @override
   void initState() {
@@ -208,12 +209,16 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           } else {
             HapticFeedback.vibrate();
+            DateTime _dateParsing = DateFormat('EEEE d MMMM yyyy', 'FR_fr')
+                .parse('$currentDayTime $year'.toLowerCase());
             setState(() {
-              currentDayTime = DateFormat('EEEE d MMMM', 'FR_fr').format(
-                  DateFormat('EEEE d MMMM yyyy', 'FR_fr')
-                      .parse('$currentDayTime ${DateTime.now().year}'
-                          .toLowerCase())
-                      .add(const Duration(days: 1)));
+              if (_dateParsing.day == 31 && _dateParsing.month == 12) {
+                year = _dateParsing.year + 1;
+              }
+              _dateParsing = _dateParsing.add(const Duration(days: 1));
+              currentDayTime =
+                  DateFormat('EEEE d MMMM', 'FR_fr').format(_dateParsing);
+
               schoolDay = DBHelper.instance.getSchoolDay(currentDayTime);
               _getDay();
               lastDateSelectedCalendar =
@@ -231,12 +236,15 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           } else {
             HapticFeedback.vibrate();
+            DateTime _dateParsing = DateFormat('EEEE d MMMM yyyy', 'FR_fr')
+                .parse('$currentDayTime $year'.toLowerCase());
             setState(() {
-              currentDayTime = DateFormat('EEEE dd MMMM', 'FR_fr').format(
-                  DateFormat('EEEE dd MMMM yyyy', 'FR_fr')
-                      .parse('$currentDayTime ${DateTime.now().year}'
-                          .toLowerCase())
-                      .subtract(const Duration(days: 1)));
+              if (_dateParsing.day == 1 && _dateParsing.month == 1) {
+                year = _dateParsing.year - 1;
+              }
+              _dateParsing = _dateParsing.subtract(const Duration(days: 1));
+              currentDayTime =
+                  DateFormat('EEEE d MMMM', 'FR_fr').format(_dateParsing);
               schoolDay = DBHelper.instance.getSchoolDay(currentDayTime);
               _getDay();
               lastDateSelectedCalendar =
@@ -316,6 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 setState(() {
                   schoolDay = DBHelper.instance.getSchoolDay(
                       DateFormat('EEEE dd MMMM', 'FR_fr').format(selectedDate));
+                  year = selectedDate.year;
                   _getDay();
                   lastDateSelectedCalendar = selectedDate;
                 });
@@ -352,6 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               schoolDay = DBHelper.instance.getSchoolDay(
                   DateFormat('EEEE dd MMMM', 'FR_fr').format(DateTime.now()));
+              year = DateTime.now().year;
               _getDay();
               lastDateSelectedCalendar = DateTime.now();
             });
