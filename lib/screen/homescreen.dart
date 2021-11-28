@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:new_version/new_version.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite_viewer/sqlite_viewer.dart';
 import 'package:theme_provider/theme_provider.dart';
@@ -37,11 +38,34 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+
+    _checkForUpdates();
+
     schoolDay = Scrap.getSchoolDayToday(
         widget.username, widget.password); // Get the school day today
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
       _getDay(); // Get the current day to display in the app bar
     });
+  }
+
+  void _checkForUpdates() async {
+    final newVersion = NewVersion(
+      androidId: 'fr.aredli.uphf.edt',
+    );
+    final status = await newVersion.getVersionStatus();
+    if (status != null && status.canUpdate) {
+      newVersion.showUpdateDialog(
+        context: context,
+        versionStatus: status,
+        dialogTitle: 'Mise à jour disponible',
+        dialogText: '''
+            Une nouvelle version est disponible: ${status.localVersion} -> ${status.storeVersion}\n
+            Nouveautés: ${status.releaseNotes}
+            ''',
+        updateButtonText: 'Mettre à jour',
+        dismissButtonText: 'Ignorer',
+      );
+    }
   }
 
   /// Get the current day to display in the app bar
