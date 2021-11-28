@@ -1,4 +1,5 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
+import 'package:cool_alert/cool_alert.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,6 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('username');
     prefs.remove('password');
+    DBHelper.instance.delete();
     Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const LoginScreen()));
   }
@@ -271,7 +273,23 @@ class _HomeScreenState extends State<HomeScreen> {
         SpeedDialChild(
           child: const Icon(Icons.logout),
           label: "Deconnexion",
-          onTap: disconnectUser,
+          onTap: () {
+            CoolAlert.show(
+              context: context,
+              type: CoolAlertType.info,
+              title: "Déconnexion",
+              text: "Voulez-vous vraiment vous déconnecter ?",
+              confirmBtnText: "Oui",
+              showCancelBtn: true,
+              cancelBtnText: "Non",
+              onConfirmBtnTap: () {
+                disconnectUser();
+              },
+              onCancelBtnTap: () {
+                Navigator.pop(context);
+              },
+            );
+          },
         ),
         SpeedDialChild(
           child: Icon(ThemeProvider.themeOf(context).data == ThemeData.dark()
@@ -286,9 +304,33 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         SpeedDialChild(
           child: const Icon(Icons.delete_sweep),
-          label: 'Effacer le cache',
+          label: 'Vider le cache',
           onTap: () async {
-            await DBHelper.instance.delete();
+            CoolAlert.show(
+              context: context,
+              type: CoolAlertType.warning,
+              title: "Effacer le cache",
+              text:
+                  "Êtes-vous sûr de vouloir effacer le cache ? (Vous perdrez vos cours enregistré. Vous ne pourrez plus les consulter hors ligne.)",
+              confirmBtnText: 'Confirmer',
+              showCancelBtn: true,
+              cancelBtnText: 'Annuler',
+              onCancelBtnTap: () => Navigator.pop(context),
+              onConfirmBtnTap: () {
+                DBHelper.instance.delete().then(
+                  (value) {
+                    CoolAlert.show(
+                      context: context,
+                      type: CoolAlertType.success,
+                      title: "Cache effacé",
+                      text: "Le cache a été effacé avec succès.",
+                      onConfirmBtnTap: () =>
+                          Navigator.popUntil(context, (route) => route.isFirst),
+                    );
+                  },
+                );
+              },
+            );
           },
         ),
       ],
