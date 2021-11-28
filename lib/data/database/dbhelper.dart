@@ -52,7 +52,8 @@ class DBHelper {
   Future<SchoolDay> getSchoolDay(String day) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('Cours',
-        where: 'lower(date) = ?', whereArgs: [day], orderBy: 'hour');
+        where: 'lower(date) = ?', whereArgs: [day], orderBy: 'TIME(hour)');
+    print(maps);
     return SchoolDay(
       day,
       maps.map((m) => Cours.fromMap(m)).toList(),
