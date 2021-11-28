@@ -1,9 +1,12 @@
 import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqlite_viewer/sqlite_viewer.dart';
 import 'package:theme_provider/theme_provider.dart';
+import 'package:uphf_edt/data/database/dbhelper.dart';
 import 'package:uphf_edt/data/http/scrap.dart';
 import 'package:uphf_edt/data/models/school_day.dart';
 import 'package:uphf_edt/screen/lesson.dart';
@@ -27,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'Emploi du temps'; // Current day time to display in the app bar
   DateTime lastDateSelectedCalendar =
       DateTime.now(); // Last date selected in the calendar
+  bool isOffline = false; // Is the app offline ?
 
   @override
   void initState() {
@@ -69,6 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
         future: schoolDay, // Get the school day
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            isOffline = false;
+            DBHelper.instance.insertCours(snapshot.data!.cours);
             return ListView.builder(
               itemCount: snapshot.data!.cours.length,
               itemBuilder: (context, index) {
@@ -76,31 +82,50 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             );
           } else if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    snapshot.error.toString().replaceAll('Exception: ', ''),
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        schoolDay = Scrap.getSchoolDayToday(
-                            widget.username, widget.password);
-                        _getDay();
-                      });
+            return FutureBuilder<SchoolDay>(
+              future: DBHelper.instance.getSchoolDay(currentDayTime),
+              builder: (context, snapshot) {
+                isOffline = true;
+                if (snapshot.hasData) {
+                  return ListView.builder(
+                    itemCount: snapshot.data!.cours.length,
+                    itemBuilder: (context, index) {
+                      return Lesson(snapshot.data!.cours[index]);
                     },
-                    child: const Text(
-                        'Cliquez ici pour essayer de vous reconnecter'),
-                  ),
-                ],
-              ),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          snapshot.error
+                              .toString()
+                              .replaceAll('Exception: ', ''),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              schoolDay = Scrap.getSchoolDayToday(
+                                  widget.username, widget.password);
+                              _getDay();
+                            });
+                          },
+                          child: const Text(
+                              'Cliquez ici pour essayer de vous reconnecter'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  return const LinearProgressIndicator();
+                }
+              },
             );
           } else {
             return const LinearProgressIndicator();
@@ -173,21 +198,51 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       onTap: (value) {
         if (value == 1) {
-          HapticFeedback.vibrate();
-          setState(() {
-            schoolDay = Scrap.getNextSchoolDay();
-            _getDay();
-            lastDateSelectedCalendar =
-                lastDateSelectedCalendar.add(const Duration(days: 1));
-          });
+          if (!isOffline) {
+            HapticFeedback.vibrate();
+            setState(() {
+              schoolDay = Scrap.getNextSchoolDay();
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.add(const Duration(days: 1));
+            });
+          } else {
+            HapticFeedback.vibrate();
+            setState(() {
+              currentDayTime = DateFormat('EEEE d MMMM', 'FR_fr').format(
+                  DateFormat('EEEE d MMMM yyyy', 'FR_fr')
+                      .parse('$currentDayTime ${DateTime.now().year}'
+                          .toLowerCase())
+                      .add(const Duration(days: 1)));
+              schoolDay = DBHelper.instance.getSchoolDay(currentDayTime);
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.add(const Duration(days: 1));
+            });
+          }
         } else {
-          HapticFeedback.vibrate();
-          setState(() {
-            schoolDay = Scrap.getPreviousSchoolDay();
-            _getDay();
-            lastDateSelectedCalendar =
-                lastDateSelectedCalendar.subtract(const Duration(days: 1));
-          });
+          if (!isOffline) {
+            HapticFeedback.vibrate();
+            setState(() {
+              schoolDay = Scrap.getPreviousSchoolDay();
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.subtract(const Duration(days: 1));
+            });
+          } else {
+            HapticFeedback.vibrate();
+            setState(() {
+              currentDayTime = DateFormat('EEEE dd MMMM', 'FR_fr').format(
+                  DateFormat('EEEE dd MMMM yyyy', 'FR_fr')
+                      .parse('$currentDayTime ${DateTime.now().year}'
+                          .toLowerCase())
+                      .subtract(const Duration(days: 1)));
+              schoolDay = DBHelper.instance.getSchoolDay(currentDayTime);
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.add(const Duration(days: 1));
+            });
+          }
         }
       },
     );
@@ -221,6 +276,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ThemeProvider.controllerOf(context).nextTheme();
           },
         ),
+        SpeedDialChild(
+          child: const Icon(Icons.delete_sweep),
+          label: 'Effacer le cache',
+          onTap: () async {
+            await DBHelper.instance.delete();
+          },
+        ),
       ],
     );
   }
@@ -242,27 +304,58 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             );
             if (selectedDate != null) {
-              DateFormat format = DateFormat('d/M/y');
-              String dateWithFormat = format.format(selectedDate);
-              setState(() {
-                schoolDay = Scrap.getASpecifiDay(dateWithFormat);
-                _getDay();
-                lastDateSelectedCalendar = selectedDate;
-              });
+              if (!isOffline) {
+                DateFormat format = DateFormat('d/M/y');
+                String dateWithFormat = format.format(selectedDate);
+                setState(() {
+                  schoolDay = Scrap.getASpecifiDay(dateWithFormat);
+                  _getDay();
+                  lastDateSelectedCalendar = selectedDate;
+                });
+              } else {
+                setState(() {
+                  schoolDay = DBHelper.instance.getSchoolDay(
+                      DateFormat('EEEE dd MMMM', 'FR_fr').format(selectedDate));
+                  _getDay();
+                  lastDateSelectedCalendar = selectedDate;
+                });
+              }
             }
           },
           icon: const Icon(Icons.calendar_today),
         ),
+        kDebugMode
+            ? IconButton(
+                onPressed: () {
+                  setState(() {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const DatabaseList()));
+                  });
+                },
+                icon: const Icon(Icons.developer_mode),
+              )
+            : Container(),
       ],
       leading: IconButton(
         onPressed: () {
-          DateFormat format = DateFormat("d/M/y");
-          String todayWithFormat = format.format(DateTime.now());
-          setState(() {
-            schoolDay = Scrap.getASpecifiDay(todayWithFormat);
-            _getDay();
-            lastDateSelectedCalendar = DateTime.now();
-          });
+          if (!isOffline) {
+            DateFormat format = DateFormat("d/M/y");
+            String todayWithFormat = format.format(DateTime.now());
+            setState(() {
+              schoolDay = Scrap.getASpecifiDay(todayWithFormat);
+              _getDay();
+              lastDateSelectedCalendar = DateTime.now();
+            });
+          } else {
+            setState(() {
+              schoolDay = DBHelper.instance.getSchoolDay(
+                  DateFormat('EEEE dd MMMM', 'FR_fr').format(DateTime.now()));
+              _getDay();
+              lastDateSelectedCalendar = DateTime.now();
+            });
+          }
         },
         icon: const Icon(Icons.today),
       ),

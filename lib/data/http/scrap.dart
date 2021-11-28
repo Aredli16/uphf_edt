@@ -60,7 +60,8 @@ class Scrap {
             room: roomElements[i].split("(")[0].trim(),
             hour: hoursElements[i].trim(),
             type: typeElement[i].trim(),
-            informations: information[0]['title'].trim(),
+            information: information[0]['title'].trim(),
+            date: _getDay(html),
           ),
         );
       }

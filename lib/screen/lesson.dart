@@ -178,7 +178,7 @@ class Lesson extends StatelessWidget {
               child: Align(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 2.0),
-                  child: Text(cours.informations ?? "",
+                  child: Text(cours.information ?? "",
                       style: const TextStyle(
                           fontStyle: FontStyle.italic, color: Colors.red)),
                 ),
