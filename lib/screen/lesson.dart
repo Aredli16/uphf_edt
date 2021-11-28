@@ -1,55 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:theme_provider/theme_provider.dart';
+import 'package:uphf_edt/data/models/cours.dart';
 
 class Lesson extends StatelessWidget {
-  final String salle;
-  final String heure;
-  final String cours;
-  final String type;
-  final String? information;
+  final Cours cours;
 
-  List<Color> getColor(String n) {
+  List<Color> getColor(String n, BuildContext context) {
     switch (n) {
       case "TD":
-        return [
-          Colors.blue[900]!,
-          Colors.blue,
-          Colors.lightBlue,
-          Colors.lightBlue[200]!
-        ];
+        return ThemeProvider.themeOf(context).data == ThemeData.dark()
+            ? [
+                Colors.teal[900]!,
+                Colors.teal,
+                Colors.teal[500]!,
+                Colors.teal[700]!,
+              ]
+            : [
+                Colors.blue[900]!,
+                Colors.blue,
+                Colors.lightBlue,
+                Colors.lightBlue[200]!
+              ];
       case "TP":
-        return [
-          Colors.green[900]!,
-          Colors.green,
-          Colors.lightGreen,
-          Colors.lightGreen[200]!
-        ];
+        return ThemeProvider.themeOf(context).data == ThemeData.dark()
+            ? [
+                Colors.green[900]!,
+                Colors.green,
+                Colors.green[500]!,
+                Colors.green[700]!,
+              ]
+            : [
+                Colors.green[900]!,
+                Colors.green,
+                Colors.lightGreen,
+                Colors.lightGreen[200]!
+              ];
       case "CM":
-        return [
-          Colors.purple[900]!,
-          Colors.purple,
-          Colors.purple[300]!,
-          Colors.purple[200]!
-        ];
+        return ThemeProvider.themeOf(context).data == ThemeData.dark()
+            ? [
+                Colors.deepPurple[900]!,
+                Colors.deepPurple,
+                Colors.deepPurple[500]!,
+                Colors.deepPurple[700]!
+              ]
+            : [
+                Colors.purple[900]!,
+                Colors.purple,
+                Colors.purple[300]!,
+                Colors.purple[200]!
+              ];
       case "DS":
-        return [
-          Colors.orange[900]!,
-          Colors.orange,
-          Colors.orange[300]!,
-          Colors.orange[200]!
-        ];
+        return ThemeProvider.themeOf(context).data == ThemeData.dark()
+            ? [
+                Colors.deepOrange[900]!,
+                Colors.deepOrange,
+                Colors.deepOrange[500]!,
+                Colors.deepOrange[700]!
+              ]
+            : [
+                Colors.orange[900]!,
+                Colors.orange,
+                Colors.orange[300]!,
+                Colors.orange[200]!
+              ];
+      case "RES":
+        return ThemeProvider.themeOf(context).data == ThemeData.dark()
+            ? [
+                Colors.grey[900]!,
+                Colors.grey,
+                Colors.grey[500]!,
+                Colors.grey[700]!
+              ]
+            : [
+                Colors.grey[900]!,
+                Colors.grey,
+                Colors.grey[400]!,
+                Colors.grey[300]!
+              ];
       default:
-        return [
-          Colors.blue[900]!,
-          Colors.blue,
-          Colors.lightBlue,
-          Colors.lightBlue[200]!
-        ];
+        return ThemeProvider.themeOf(context).data == ThemeData.dark()
+            ? [
+                Colors.teal[900]!,
+                Colors.teal,
+                Colors.teal[500]!,
+                Colors.teal[700]!,
+              ]
+            : [
+                Colors.blue[900]!,
+                Colors.blue,
+                Colors.lightBlue,
+                Colors.lightBlue[200]!
+              ];
     }
   }
 
-  const Lesson(this.salle, this.heure, this.cours, this.type,
-      {Key? key, this.information})
-      : super(key: key);
+  const Lesson(this.cours, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +111,7 @@ class Lesson extends StatelessWidget {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: getColor(type),
+                    colors: getColor(cours.type ?? "TD", context),
                   ),
                   borderRadius: const BorderRadius.all(Radius.circular(40))),
               child: Column(
@@ -78,16 +123,19 @@ class Lesson extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          cours,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            cours.name ?? "",
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         Text(
-                          type.toUpperCase(),
+                          cours.type?.toUpperCase() ?? "",
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.white,
@@ -107,14 +155,14 @@ class Lesson extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          salle,
+                          cours.room ?? "",
                           style: const TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 20,
                               color: Colors.white),
                         ),
                         Text(
-                          heure,
+                          cours.hour ?? "",
                           style: const TextStyle(
                               fontSize: 18,
                               color: Colors.white,
@@ -130,7 +178,7 @@ class Lesson extends StatelessWidget {
               child: Align(
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 2.0),
-                  child: Text(information ?? "",
+                  child: Text(cours.information ?? "",
                       style: const TextStyle(
                           fontStyle: FontStyle.italic, color: Colors.red)),
                 ),

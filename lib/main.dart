@@ -1,13 +1,28 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uphf_edt/screen/homescreen.dart';
+import 'package:uphf_edt/screen/introscreen.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
+import 'package:theme_provider/theme_provider.dart';
+
+// Used to accept the certificate for https if can't be validated
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 void main() async {
+  HttpOverrides.global =
+      MyHttpOverrides(); // Used to accept the certificate for https if can't be validated
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
@@ -16,9 +31,13 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   String? username = prefs.getString('username');
   String? password = prefs.getString('password');
+  if (prefs.getBool('first_run') == null) {
+    prefs.setBool('first_run', true);
+  }
   runApp(MyApp(
     username: username,
     password: password,
+    firstTime: prefs.getBool('first_run')!,
   ));
 }
 
@@ -27,38 +46,56 @@ class MyApp extends StatelessWidget {
     Key? key,
     this.username,
     this.password,
+    required this.firstTime,
   }) : super(key: key);
 
   final String? username;
   final String? password;
+  final bool firstTime;
 
   //Returns the current screen to display
   Widget _getScreen() {
-    if (username == null || password == null) {
-      return const LoginScreen();
+    if (firstTime) {
+      return const IntroScreen();
+    } else if (username == null || password == null) {
+      return const LoginScreen(
+        isFirstTime: false,
+      );
     } else {
       return HomeScreen(
         username: username!,
         password: password!,
+        isFirstTime: false,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
+    return ThemeProvider(
+      saveThemesOnChange: true,
+      loadThemeOnInit: true,
+      themes: [
+        AppTheme.light(),
+        AppTheme.dark(),
       ],
-      supportedLocales: const [
-        Locale("fr"),
-      ],
-      title: 'UHF_EDT',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        textTheme: GoogleFonts.ubuntuTextTheme(),
+      child: ThemeConsumer(
+        child: Builder(
+          builder: (context) {
+            return MaterialApp(
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+              ],
+              supportedLocales: const [
+                Locale("fr"),
+              ],
+              title: 'UHF_EDT',
+              theme: ThemeProvider.themeOf(context).data,
+              home: _getScreen(),
+            );
+          },
+        ),
       ),
-      home: _getScreen(),
     );
   }
 }
