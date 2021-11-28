@@ -130,6 +130,21 @@ class _IntroScreenState extends State<IntroScreen> {
           ),
         ),
         PageViewModel(
+          title: "Sauvegarde".toUpperCase(),
+          body:
+              "En plus de ne plus avoir besoin de vous connecter, vos cours sont directement enregistrés sur votre téléphone. Ainsi, si vous n'avez plus de connexion ou si l'ENT est momentanément indisponible, vous pourrez accéder aux cours que vous avez consultés précédemment.",
+          image: Image.asset('assets/intro/exemple_lesson.png', height: 300),
+          decoration: const PageDecoration(
+            titleTextStyle: TextStyle(
+              fontSize: 28.0,
+              fontWeight: FontWeight.bold,
+            ),
+            bodyTextStyle: TextStyle(
+              fontSize: 16.0,
+            ),
+          ),
+        ),
+        PageViewModel(
           title: "Prêt ?".toUpperCase(),
           body: "Connectez-vous et consulter votre application !",
           image: Image.asset('assets/intro/go.png', height: 150),
@@ -151,6 +166,7 @@ class _IntroScreenState extends State<IntroScreen> {
       },
       skip: const Text("Passer"),
       next: const Text("Suivant"),
+      dotsFlex: 2,
       onDone: () async {
         // When done button is press
         await pushLoginScreen(context);
