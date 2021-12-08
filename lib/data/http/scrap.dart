@@ -57,7 +57,9 @@ class Scrap {
         cours.add(
           Cours(
             name: coursElements[i]['title'].split("(")[0].trim(),
-            room: roomElements[i].split("(")[0].trim(),
+            room: roomElements.isEmpty
+                ? ""
+                : roomElements[i].split("(")[0].trim(),
             hour: hoursElements[i].trim(),
             type: typeElement[i].trim(),
             information: information[0]['title'].trim(),
