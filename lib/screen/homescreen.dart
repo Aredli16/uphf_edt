@@ -15,6 +15,7 @@ import 'package:uphf_edt/data/models/school_day.dart';
 import 'package:uphf_edt/screen/lesson.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
+import 'package:swipe/swipe.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen(
@@ -186,73 +187,97 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: buildAppBar(context),
-      body: Container(
-        key: keyCoursList,
-        child: FutureBuilder<SchoolDay>(
-          future: schoolDay, // Get the school day
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              isOnline = true;
-              DBHelper.instance.insertCours(snapshot.data!.cours);
-              return ListView.builder(
-                itemCount: snapshot.data!.cours.length,
-                itemBuilder: (context, index) {
-                  return Lesson(snapshot.data!.cours[index]);
-                },
-              );
-            } else if (snapshot.hasError) {
-              return FutureBuilder<SchoolDay>(
-                future: DBHelper.instance.getSchoolDay(currentDayTime),
-                builder: (context, snapshot) {
-                  isOnline = false;
-                  if (snapshot.hasData) {
-                    return RefreshIndicator(
-                      onRefresh: _tryToReconnect,
-                      child: ListView.builder(
-                        itemCount: snapshot.data!.cours.length,
-                        itemBuilder: (context, index) {
-                          return Lesson(snapshot.data!.cours[index]);
-                        },
-                      ),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            snapshot.error
-                                .toString()
-                                .replaceAll('Exception: ', ''),
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                                color: Colors.red,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 20),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setState(() {
-                                schoolDay = Scrap.getSchoolDayToday(
-                                    widget.username, widget.password);
-                                _getDay();
-                              });
-                            },
-                            child: const Text(
-                                'Cliquez ici pour essayer de vous reconnecter'),
-                          ),
-                        ],
-                      ),
-                    );
-                  } else {
-                    return const LinearProgressIndicator();
-                  }
-                },
-              );
-            } else {
-              return const LinearProgressIndicator();
+      body: Swipe(
+        onSwipeLeft: () => {
+          if (isOnline)
+            {
+              setState(() {
+                schoolDay = Scrap.getNextSchoolDay();
+                _getDay();
+                lastDateSelectedCalendar =
+                    lastDateSelectedCalendar.add(const Duration(days: 1));
+              })
             }
-          },
+        },
+        onSwipeRight: () => {
+          if (isOnline)
+            {
+              setState(() {
+                schoolDay = Scrap.getPreviousSchoolDay();
+                _getDay();
+                lastDateSelectedCalendar =
+                    lastDateSelectedCalendar.add(const Duration(days: 1));
+              })
+            }
+        },
+        child: Container(
+          key: keyCoursList,
+          child: FutureBuilder<SchoolDay>(
+            future: schoolDay, // Get the school day
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                isOnline = true;
+                DBHelper.instance.insertCours(snapshot.data!.cours);
+                return ListView.builder(
+                  itemCount: snapshot.data!.cours.length,
+                  itemBuilder: (context, index) {
+                    return Lesson(snapshot.data!.cours[index]);
+                  },
+                );
+              } else if (snapshot.hasError) {
+                return FutureBuilder<SchoolDay>(
+                  future: DBHelper.instance.getSchoolDay(currentDayTime),
+                  builder: (context, snapshot) {
+                    isOnline = false;
+                    if (snapshot.hasData) {
+                      return RefreshIndicator(
+                        onRefresh: _tryToReconnect,
+                        child: ListView.builder(
+                          itemCount: snapshot.data!.cours.length,
+                          itemBuilder: (context, index) {
+                            return Lesson(snapshot.data!.cours[index]);
+                          },
+                        ),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              snapshot.error
+                                  .toString()
+                                  .replaceAll('Exception: ', ''),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  schoolDay = Scrap.getSchoolDayToday(
+                                      widget.username, widget.password);
+                                  _getDay();
+                                });
+                              },
+                              child: const Text(
+                                  'Cliquez ici pour essayer de vous reconnecter'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return const LinearProgressIndicator();
+                    }
+                  },
+                );
+              } else {
+                return const LinearProgressIndicator();
+              }
+            },
+          ),
         ),
       ),
       bottomNavigationBar: buildNavigation(),

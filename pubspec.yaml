@@ -50,6 +50,7 @@ dependencies:
   cool_alert: ^1.1.0
   new_version: ^0.2.3
   tutorial: ^1.0.8
+  swipe: ^0.0.1
 
 dev_dependencies:
   flutter_test:
