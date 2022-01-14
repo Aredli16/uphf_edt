@@ -6,6 +6,7 @@ class Cours {
   final String? note;
   final String? information;
   final String? date;
+  final String? prof;
 
   Cours({
     this.name,
@@ -15,6 +16,7 @@ class Cours {
     this.information,
     this.note,
     this.date,
+    this.prof
   });
 
   toMap() {
@@ -26,6 +28,7 @@ class Cours {
       'information': information,
       'note': note,
       'date': date,
+      'prof': prof,
     };
   }
 
@@ -38,6 +41,7 @@ class Cours {
       information: map['information'],
       note: map['note'],
       date: map['date'],
+      prof: map['prof']
     );
   }
 }

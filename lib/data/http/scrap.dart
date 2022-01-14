@@ -52,19 +52,23 @@ class Scrap {
       information.removeWhere((element) =>
           element['attributes']['style'] != 'color:red;'); // Get information
 
+      List<String> profElement =
+          webScraper.getElementTitle("div > ul > li > p > strong");
+      profElement.removeWhere((element) => !element.contains('.'));
+
       List<Cours> cours = [];
       for (int i = 0; i < coursElements.length; i++) {
         cours.add(
           Cours(
-            name: coursElements[i]['title'].split("(")[0].trim(),
-            room: roomElements.isEmpty
-                ? ""
-                : roomElements[i].split("(")[0].trim(),
-            hour: hoursElements[i].trim(),
-            type: typeElement[i].trim(),
-            information: information[0]['title'].trim(),
-            date: _getDay(html),
-          ),
+              name: coursElements[i]['title'].split("(")[0].trim(),
+              room: roomElements.isEmpty
+                  ? ""
+                  : roomElements[i].split("(")[0].trim(),
+              hour: hoursElements[i].trim(),
+              type: typeElement[i].trim(),
+              information: information[0]['title'].trim(),
+              date: _getDay(html),
+              prof: profElement[i].trim()),
         );
       }
       return SchoolDay(_getDay(html), cours);

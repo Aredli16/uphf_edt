@@ -154,12 +154,30 @@ class Lesson extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          cours.room ?? "",
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.white),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              cours.room ?? "",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                  color: Colors.white),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 5),
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.5,
+                                child: Text(
+                                  cours.prof ?? "",
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                  style: const TextStyle(
+                                      fontSize: 14, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         Text(
                           cours.hour ?? "",
