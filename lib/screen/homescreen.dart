@@ -188,27 +188,55 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: buildAppBar(context),
       body: Swipe(
-        onSwipeLeft: () => {
-          if (isOnline)
-            {
-              setState(() {
-                schoolDay = Scrap.getNextSchoolDay();
-                _getDay();
-                lastDateSelectedCalendar =
-                    lastDateSelectedCalendar.add(const Duration(days: 1));
-              })
-            }
+        onSwipeLeft: () {
+          if (isOnline) {
+            setState(() {
+              schoolDay = Scrap.getNextSchoolDay();
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.add(const Duration(days: 1));
+            });
+          } else {
+            DateTime _dateParsing = DateFormat('EEEE d MMMM yyyy', 'FR_fr')
+                .parse('$currentDayTime $year'.toLowerCase());
+            setState(() {
+              if (_dateParsing.day == 31 && _dateParsing.month == 12) {
+                year = _dateParsing.year + 1;
+              }
+              _dateParsing = _dateParsing.add(const Duration(days: 1));
+              currentDayTime =
+                  DateFormat('EEEE d MMMM', 'FR_fr').format(_dateParsing);
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.add(const Duration(days: 1));
+              _tryToReconnect();
+            });
+          }
         },
-        onSwipeRight: () => {
-          if (isOnline)
-            {
-              setState(() {
-                schoolDay = Scrap.getPreviousSchoolDay();
-                _getDay();
-                lastDateSelectedCalendar =
-                    lastDateSelectedCalendar.add(const Duration(days: 1));
-              })
-            }
+        onSwipeRight: () {
+          if (isOnline) {
+            setState(() {
+              schoolDay = Scrap.getPreviousSchoolDay();
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.add(const Duration(days: 1));
+            });
+          } else {
+            DateTime _dateParsing = DateFormat('EEEE d MMMM yyyy', 'FR_fr')
+                .parse('$currentDayTime $year'.toLowerCase());
+            setState(() {
+              if (_dateParsing.day == 31 && _dateParsing.month == 12) {
+                year = _dateParsing.year + 1;
+              }
+              _dateParsing = _dateParsing.add(const Duration(days: 1));
+              currentDayTime =
+                  DateFormat('EEEE d MMMM', 'FR_fr').format(_dateParsing);
+              _getDay();
+              lastDateSelectedCalendar =
+                  lastDateSelectedCalendar.add(const Duration(days: 1));
+              _tryToReconnect();
+            });
+          }
         },
         child: Container(
           key: keyCoursList,
