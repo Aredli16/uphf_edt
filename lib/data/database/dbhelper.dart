@@ -27,6 +27,7 @@ class DBHelper {
               room VARCHAR(20),
               hour VARCHAR(20),
               date VARCHAR(30),
+              prof VARCHAR(200),
               information VARCHAR(100),
               note VARCHAR(100),
               PRIMARY KEY(name, type, room, hour, date)
