@@ -166,7 +166,7 @@ class Lesson extends StatelessWidget {
                             ),
                             Padding(
                               padding: const EdgeInsets.only(top: 5),
-                              child: Container(
+                              child: SizedBox(
                                 width: MediaQuery.of(context).size.width * 0.5,
                                 child: Text(
                                   cours.prof ?? "",
