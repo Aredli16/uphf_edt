@@ -10,7 +10,6 @@ import 'package:uphf_edt/screen/introscreen.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
 import 'package:theme_provider/theme_provider.dart';
 
-// Used to accept the certificate for https if can't be validated
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -21,13 +20,12 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() async {
-  HttpOverrides.global =
-      MyHttpOverrides(); // Used to accept the certificate for https if can't be validated
+  WidgetsFlutterBinding.ensureInitialized();
+  HttpOverrides.global = MyHttpOverrides();
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   String? username = prefs.getString('username');
   String? password = prefs.getString('password');
@@ -65,7 +63,6 @@ class MyApp extends StatelessWidget {
       return HomeScreen(
         username: username!,
         password: password!,
-        isFirstTime: false,
       );
     }
   }
@@ -85,9 +82,10 @@ class MyApp extends StatelessWidget {
             return MaterialApp(
               localizationsDelegates: const [
                 GlobalMaterialLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
               ],
               supportedLocales: const [
-                Locale("fr"),
+                Locale('fr', 'FR'),
               ],
               title: 'UHF_EDT',
               theme: ThemeProvider.themeOf(context).data,

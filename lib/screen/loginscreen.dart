@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uphf_edt/data/http/http_request.dart';
-import 'homescreen.dart';
+import 'package:uphf_edt/data/web/session.dart';
+import 'package:uphf_edt/screen/homescreen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key, required this.isFirstTime}) : super(key: key);
@@ -36,14 +36,14 @@ class _LoginScreenState extends State<LoginScreen> {
     username = data.name;
     password = data.password;
     try {
-      if (!await HttpRequestHelper.instance.isLog(username!, password!)) {
+      if (!await Session.instance.isLog(username!, password!)) {
         return "Identifiant ou mot de passe incorrect";
       }
     } catch (e) {
       return e.toString().replaceAll("Exception: ", "");
     }
-    prefs.setString('username', username!);
-    prefs.setString('password', password!);
+    await prefs.setString('username', username!);
+    await prefs.setString('password', password!);
     return null;
   }
 
@@ -54,21 +54,20 @@ class _LoginScreenState extends State<LoginScreen> {
       logo: 'assets/2560px-UPHF_logo.svg.png',
       logoTag: 'uphf_logo_tag',
       onLogin: _authUser,
-      onSignup: (p0) => Future(() => null),
+      onSignup: null,
       onSubmitAnimationCompleted: () {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            username: username!,
-            password: password!,
-            isFirstTime: widget.isFirstTime,
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                HomeScreen(username: username!, password: password!),
           ),
-        ));
+        );
       },
       onRecoverPassword: (p0) => Future(() => null),
       userType: LoginUserType.name,
       userValidator: _userValidator,
       passwordValidator: _passwordValidator,
-      hideSignUpButton: true,
       hideForgotPasswordButton: true,
       messages: LoginMessages(
         userHint: "Nom d'utilisateur",

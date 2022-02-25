@@ -168,7 +168,6 @@ class _IntroScreenState extends State<IntroScreen> {
       next: const Text("Suivant"),
       dotsFlex: 2,
       onDone: () async {
-        // When done button is press
         await pushLoginScreen(context);
       },
     );

@@ -1,8 +1,8 @@
-import 'package:uphf_edt/data/models/cours.dart';
+import 'package:uphf_edt/data/models/lesson.dart';
 
 class SchoolDay {
-  String dayTime;
-  List<Cours> cours;
+  final DateTime date;
+  final List<Lesson> lessons;
 
-  SchoolDay(this.dayTime, this.cours);
+  SchoolDay(this.date, this.lessons);
 }
