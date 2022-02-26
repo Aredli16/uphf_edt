@@ -169,6 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onDisconnect() async {
+    DatabaseHelper.instance.delete();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
     await prefs.remove('password');
