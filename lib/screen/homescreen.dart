@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite_viewer/sqlite_viewer.dart';
 import 'package:uphf_edt/data/database/database_helper.dart';
@@ -152,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onNextDay() {
+    HapticFeedback.vibrate();
     setState(() {
       schoolDay = Session.instance.getNextPage();
       currentDate = currentDate.add(const Duration(days: 1));
@@ -159,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void onPreviousDay() {
+    HapticFeedback.vibrate();
     setState(() {
       schoolDay = Session.instance.getPreviousPage();
       currentDate = currentDate.subtract(const Duration(days: 1));
