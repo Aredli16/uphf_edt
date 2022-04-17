@@ -1,15 +1,15 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite_viewer/sqlite_viewer.dart';
 import 'package:uphf_edt/data/database/database_helper.dart';
+import 'package:uphf_edt/data/manager/data_manager.dart';
 import 'package:uphf_edt/data/models/school_day.dart';
 import 'package:uphf_edt/data/utils/date_helper.dart';
-import 'package:uphf_edt/data/web/session.dart';
 import 'package:uphf_edt/screen/loginscreen.dart';
 import 'package:uphf_edt/screen/widgets/bottom_bar.dart';
 import 'package:uphf_edt/screen/widgets/floating_button.dart';
-import 'package:http/http.dart' as http;
 import 'package:uphf_edt/screen/widgets/lesson_tile.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,12 +25,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late Future<SchoolDay> schoolDay;
-  DateTime currentDate = DateTime.now();
 
   @override
   void initState() {
-    http.Client client = http.Client();
-    schoolDay = Session.instance.get(client, widget.username, widget.password);
+    schoolDay =
+        DataManager.instance.getSchoolDay(widget.username, widget.password);
     super.initState();
   }
 
@@ -52,14 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   AppBar buildAppBar() {
     return AppBar(
-      title:
-          Text(DateHelper.convertDateTimeToLitteral(currentDate).toUpperCase()),
+      title: Text(
+          DateHelper.convertDateTimeToLitteral(DataManager.instance.currentDate)
+              .toUpperCase()),
       centerTitle: true,
       leading: IconButton(
         icon: const Icon(Icons.calendar_today),
         onPressed: () => setState(() {
-          currentDate = DateTime.now();
-          schoolDay = Session.instance.getSpecificDay(DateTime.now());
+          schoolDay = DataManager.instance.getSpecificDay(DateTime.now());
         }),
       ),
       actions: [
@@ -67,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onPressed: () async {
             DateTime? selectedDate = await showDatePicker(
               context: context,
-              initialDate: currentDate,
+              initialDate: DataManager.instance.currentDate,
               firstDate: DateTime.now().subtract(const Duration(days: 365)),
               lastDate: DateTime.now().add(
                 const Duration(days: 365),
@@ -76,8 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             if (selectedDate != null) {
               setState(() {
-                schoolDay = Session.instance.getSpecificDay(selectedDate);
-                currentDate = selectedDate;
+                schoolDay = DataManager.instance.getSpecificDay(selectedDate);
               });
             }
           },
@@ -103,69 +101,45 @@ class _HomeScreenState extends State<HomeScreen> {
       future: schoolDay,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return buildOfflineSchoolDay();
+          return Center(
+            child: Text('Error: ${snapshot.error}'),
+          );
         }
         switch (snapshot.connectionState) {
           case ConnectionState.waiting:
             return const LinearProgressIndicator();
           case ConnectionState.done:
-            return buildOnlineSchoolDay(snapshot);
+            return ListView.builder(
+              itemCount: snapshot.data!.lessons.length,
+              itemBuilder: (context, index) {
+                return LessonTile(snapshot.data!.lessons[index]);
+              },
+            );
           default:
             return Center(
-              child: Text('Error: ${snapshot.error}'),
+              child: Text('Erreur: ${snapshot.error}'),
             );
         }
       },
     );
   }
 
-  ListView buildOnlineSchoolDay(AsyncSnapshot<SchoolDay> snapshot) {
-    DatabaseHelper.instance.insertSchoolDay(snapshot.data!, currentDate);
-    return buildSchoolDay(snapshot.data!);
-  }
-
-  FutureBuilder<SchoolDay> buildOfflineSchoolDay() {
-    return FutureBuilder<SchoolDay>(
-      future: DatabaseHelper.instance.getSchoolDay(currentDate),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              snapshot.error!.toString(),
-            ),
-          );
-        } else if (snapshot.hasData) {
-          return buildSchoolDay(snapshot.data!);
-        }
-        return const LinearProgressIndicator();
-      },
-    );
-  }
-
-  ListView buildSchoolDay(SchoolDay data) {
-    return ListView.builder(
-      itemCount: data.lessons.length,
-      itemBuilder: (context, index) {
-        return LessonTile(data.lessons[index]);
-      },
-    );
-  }
-
   void onNextDay() {
+    HapticFeedback.vibrate();
     setState(() {
-      schoolDay = Session.instance.getNextPage();
-      currentDate = currentDate.add(const Duration(days: 1));
+      schoolDay = DataManager.instance.getNextSchoolDay();
     });
   }
 
   void onPreviousDay() {
+    HapticFeedback.vibrate();
     setState(() {
-      schoolDay = Session.instance.getPreviousPage();
-      currentDate = currentDate.subtract(const Duration(days: 1));
+      schoolDay = DataManager.instance.getPreviousSchoolDay();
     });
   }
 
   void onDisconnect() async {
+    DatabaseHelper.instance.delete();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
     await prefs.remove('password');
