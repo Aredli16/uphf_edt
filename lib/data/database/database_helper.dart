@@ -41,6 +41,7 @@ class DatabaseHelper {
 
   Future<void> insertSchoolDay(SchoolDay schoolDay, DateTime date) async {
     final db = await database;
+    await deleteSchoolDay(date);
     for (final lesson in schoolDay.lessons) {
       lesson.date = date;
       await db.insert(
@@ -49,6 +50,15 @@ class DatabaseHelper {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
+  }
+
+  Future<void> deleteSchoolDay(DateTime date) async {
+    final db = await database;
+    await db.delete(
+      'Lesson',
+      where: 'date = ?',
+      whereArgs: [DateHelper.convertDateTimeToSQLFormat(date)],
+    );
   }
 
   Future<SchoolDay> getSchoolDay(DateTime date) async {
