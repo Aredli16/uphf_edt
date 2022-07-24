@@ -1,6 +1,6 @@
+import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:theme_provider/theme_provider.dart';
-import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 
 class CustomBottomBar extends StatelessWidget {
   final void Function() onNextDay;
@@ -16,8 +16,9 @@ class CustomBottomBar extends StatelessWidget {
       activeIndex: 0,
       gapLocation: GapLocation.center,
       notchMargin: 4,
-      elevation:
-          ThemeProvider.themeOf(context).data == ThemeData.dark() ? 0 : 8,
+      shadow: ThemeProvider.themeOf(context).data == ThemeData.dark()
+          ? const Shadow(color: Colors.white, blurRadius: 0.4)
+          : const Shadow(color: Colors.black, blurRadius: 0.4),
       backgroundColor: ThemeProvider.themeOf(context).data == ThemeData.dark()
           ? Colors.black54
           : Colors.white,
